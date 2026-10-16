@@ -1,0 +1,16 @@
+node_modules
+.next
+package-lock.json
+docs/README.md
+docs/prd.md
+docs/trd.md
+docs/design.md
+docs/architecture.md
+docs/dbschema.md
+docs/auth-security.md
+docs/api-events.md
+docs/media-pipeline.md
+docs/observability-runbook.md
+docs/testing-deployment.md
+docs/decisions-sources.md
+next-env.d.ts

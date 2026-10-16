@@ -3321,13 +3321,42 @@ th {
 .gallery-photo p {
   padding: 24px;
 }
+.gallery-stage {
+  position: relative;
+  touch-action: pan-y;
+}
+.gallery-open {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  cursor: zoom-in;
+}
 .gallery-controls {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin: 12px 0;
-  flex-wrap: wrap;
+  padding: 12px;
+  pointer-events: none;
+}
+.gallery-controls .button {
+  pointer-events: auto;
+  padding: 10px;
+  border-radius: 50%;
+  background: white;
+}
+.gallery-controls > span {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: white;
 }
 .gallery-thumbnails {
   display: flex;

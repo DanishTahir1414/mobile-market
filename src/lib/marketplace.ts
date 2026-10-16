@@ -36,3 +36,10 @@ export function filterListings(listings: Listing[], filters: Filters) {
           : b.listedAt.localeCompare(a.listedAt),
     );
 }
+
+export function paginate<T>(items: T[], requested: string | null, size: number) {
+  const pageCount = Math.max(1, Math.ceil(items.length / size));
+  const value = Number(requested);
+  const page = Number.isSafeInteger(value) && value > 0 ? Math.min(value, pageCount) : 1;
+  return { page, pageCount, items: items.slice((page - 1) * size, page * size) };
+}

@@ -51,3 +51,23 @@ Status: implemented presentations, with real browser-local behavior where listed
 - [ ] Server-backed search, pagination and live contact actions.
 
 These items are outside the updated frontend-only scope and remain future work.
+
+## Completion additions
+
+| Route                                                                                                       | Updated behavior                                                                                             |
+| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `/mobiles`                                                                                                  | Pending mobile filters, Apply/Clear, active filter summary, URL-restored query, four-item bounded pagination |
+| `/mobiles/:id`                                                                                              | Shared multiple-photo gallery, thumbnails, previous/next, full-screen dialog and arrow keys                  |
+| `/mobiles/sample-sold`, `/mobiles/sample-withdrawn`, `/mobiles/sample-expired`, `/mobiles/sample-suspended` | Explicit non-contactable status examples, excluded from browse                                               |
+| `/account/listings/:id/preview`                                                                             | Read-only saved draft; unknown IDs recover without creating a draft                                          |
+| `/account/listings`                                                                                         | All lifecycle states, confirmation and local-only transitions; terminal states cannot edit                   |
+| `/account/inspections/:id`                                                                                  | Local booking detail, Karachi time, cancellation, presentation timeline and report states                    |
+| `/account/inspections/acknowledge`                                                                          | Exact findings, defects, limitations and revision invalidation demonstration                                 |
+| `/staff/moderation/:id`                                                                                     | Gallery, revision under review, reason form and stale-revision blocker                                       |
+| `/staff/appointments/:id`                                                                                   | Assignment and attendance form with unavailable/conflict boundary                                            |
+| `/staff/abuse/demo`                                                                                         | Illustrative complaint detail and required resolution reason                                                 |
+| `/staff/team/demo`                                                                                          | Illustrative staff detail, proposal permissions, suspension confirmation and denied access explanation       |
+| `/staff/catalog`                                                                                            | Catalog proposal validation with explicit unsaved/unavailable feedback                                       |
+| `/staff/settings`                                                                                           | Unsaved settings proposal and draft inspection policy live preview                                           |
+
+Staff pages remain public presentations, never access grants. Unknown staff detail paths return not found rather than silently selecting the sample bench.

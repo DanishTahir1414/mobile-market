@@ -2,12 +2,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Check, ImagePlus, Save, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, ButtonLink } from '@/components/ui/button';
 import { Input, Select, Textarea } from '@/components/ui/field';
-import { Notice } from '@/components/ui/empty-state';
+import { PhotoGallery } from '@/components/listings/photo-gallery';
+import { Dialog } from '@/components/ui/dialog';
+import { EmptyState, Notice } from '@/components/ui/empty-state';
 import { PageHeading } from '@/components/ui/page-heading';
 import { useDemo } from '@/components/demo-provider';
 import { catalog, cities } from '@/lib/catalog';
+import { editKind } from '@/lib/listing-lifecycle';
 import { draftSchema } from '@/lib/validation';
 import { formatPrice } from '@/lib/format';
 import type { ListingDraft } from '@/lib/types';
@@ -39,12 +42,38 @@ interface Photo {
   url: string;
   name: string;
 }
-export function ListingForm({ draftId }: { draftId?: string }) {
-  const { ready } = useDemo();
+export function ListingForm({ draftId, preview = false }: { draftId?: string; preview?: boolean }) {
+  const { ready, drafts } = useDemo();
   if (!ready) return <div className="container page-space">Loading your draft…</div>;
-  return <ListingFormContent draftId={draftId} />;
+  if (draftId && !drafts.some((draft) => draft.id === draftId))
+    return (
+      <EmptyState
+        title="Draft not found in this browser"
+        description="Return to your listings or create a new draft. Opening this URL has not changed saved drafts."
+      />
+    );
+  if (
+    !preview &&
+    drafts.some(
+      (draft) =>
+        draft.id === draftId && ['sold', 'withdrawn', 'pending_review'].includes(draft.status),
+    )
+  )
+    return (
+      <EmptyState
+        title="Editing unavailable in this state"
+        description="Sold and withdrawn listings are terminal; pending listings must finish review first."
+      />
+    );
+  return (
+    <ListingFormContent
+      key={`${draftId || 'new'}-${preview}`}
+      draftId={draftId}
+      preview={preview}
+    />
+  );
 }
-function ListingFormContent({ draftId }: { draftId?: string }) {
+function ListingFormContent({ draftId, preview }: { draftId?: string; preview: boolean }) {
   const { drafts, saveDraft, notify } = useDemo(),
     router = useRouter();
   const [draft, setDraft] = useState<ListingDraft>(
@@ -54,46 +83,103 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
           id: crypto.randomUUID(),
         },
     ),
-    [step, setStep] = useState(0),
+    [step, setStep] = useState(preview ? 3 : 0),
     [photos, setPhotos] = useState<Photo[]>([]),
-    [error, setError] = useState('');
+    [error, setError] = useState(''),
+    [fieldErrors, setFieldErrors] = useState<Record<string, string>>({}),
+    [savedValue, setSavedValue] = useState(() => JSON.stringify(draft)),
+    [saveMessage, setSaveMessage] = useState(''),
+    [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const dirty = JSON.stringify(draft) !== savedValue;
+  useEffect(() => {
+    if (preview || (!dirty && !photos.length)) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    const onLink = (event: MouseEvent) => {
+      const target = event.target;
+      if (
+        !(target instanceof Element) ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return;
+      const href = target.closest('a[href]')?.getAttribute('href');
+      if (!href || !href.startsWith('/') || href.startsWith('//')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setPendingNavigation(href);
+    };
+    window.addEventListener('beforeunload', beforeUnload);
+    document.addEventListener('click', onLink, true);
+    return () => {
+      window.removeEventListener('beforeunload', beforeUnload);
+      document.removeEventListener('click', onLink, true);
+    };
+  }, [dirty, photos.length, preview]);
   const set = <K extends keyof ListingDraft>(key: K, value: ListingDraft[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
   const save = () => {
-    saveDraft({ ...draft, updatedAt: new Date().toISOString() });
-    notify('Draft saved in this browser.');
+    const previous = drafts.find((item) => item.id === draft.id);
+    if (previous?.status === 'published' && !draftSchema.safeParse(draft).success) {
+      setError('Correct listing validation before editing this published demo.');
+      return false;
+    }
+    const kind = photos.length ? 'material' : previous ? editKind(previous, draft) : 'none';
+    if (
+      previous?.status === 'published' &&
+      kind === 'material' &&
+      !window.confirm(
+        'This material edit invalidates existing inspection eligibility and returns the local scenario to review. Continue?',
+      )
+    )
+      return false;
+    const status =
+      previous?.status === 'published' && kind === 'material'
+        ? 'pending_review'
+        : draft.status === 'rejected'
+          ? 'draft'
+          : draft.status;
+    const updated = { ...draft, status, updatedAt: new Date().toISOString() };
+    const persisted = saveDraft(updated);
+    setDraft(updated);
+    setSavedValue(JSON.stringify(updated));
+    const message = persisted
+      ? 'Draft saved in this browser. Temporary photos are not saved.'
+      : 'Browser storage unavailable or full. Draft kept in this tab only; copy your details before leaving.';
+    setSaveMessage(message);
+    notify(message);
+    return true;
   };
   const next = () => {
     setError('');
-    if (
-      step === 0 &&
-      (!draft.brand ||
-        !draft.model ||
-        !draft.storage ||
-        !draft.price ||
-        Number(draft.price) <= 0 ||
-        !draft.city ||
-        !draft.color)
-    ) {
-      setError('Complete the phone details and enter a valid asking price.');
+    const fields =
+      step === 0
+        ? ['brand', 'model', 'storage', 'price', 'city', 'color']
+        : step === 1
+          ? ['condition', 'description', 'battery', 'pta']
+          : ['consent'];
+    const result = draftSchema.safeParse(draft);
+    const issues = result.success
+      ? []
+      : result.error.issues.filter((issue) => fields.includes(String(issue.path[0])));
+    const errors = Object.fromEntries(
+      issues.map((issue) => [String(issue.path[0]), issue.message]),
+    );
+    setFieldErrors(errors);
+    if (issues.length) {
+      setError('Please correct the marked fields.');
+      document.getElementById(`listing-${String(issues[0].path[0])}`)?.focus();
       return;
     }
-    if (step === 1 && (!draft.condition || draft.description.length < 20)) {
-      setError('Choose a condition and write a description of at least 20 characters.');
+    if (step === 2 && !draft.call && !draft.whatsapp) {
+      setError('Choose at least one contact option.');
       return;
     }
-    if (step === 2) {
-      const result = draftSchema.safeParse(draft);
-      if (!result.success) {
-        setError(result.error.issues[0].message);
-        return;
-      }
-      if (!draft.call && !draft.whatsapp) {
-        setError('Choose at least one contact option.');
-        return;
-      }
-    }
-    saveDraft({ ...draft, updatedAt: new Date().toISOString() });
+    if (!save()) return;
     setStep((s) => Math.min(s + 1, 3));
   };
   // Preview files stay in memory. The frontend never pretends to process or upload them.
@@ -113,7 +199,10 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
         setError('Use JPEG, PNG or WebP files under 5 MB.');
         continue;
       }
-      if (photos.length + accepted.length >= 8) break;
+      if (photos.length + accepted.length >= 8) {
+        setError('Maximum 8 photos. Additional files were not added.');
+        break;
+      }
       accepted.push({
         id: crypto.randomUUID(),
         name: file.name,
@@ -140,19 +229,46 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
     <div className="container page-space narrow-page">
       <PageHeading
         eyebrow="A NEW CHAPTER STARTS HERE"
-        title={draftId ? 'Edit your listing' : 'Let’s find your phone a new home.'}
+        title={
+          preview
+            ? 'Preview saved listing'
+            : draftId
+              ? 'Edit your listing'
+              : 'Let’s find your phone a new home.'
+        }
         description="Honest details make better connections."
         action={
-          <Button variant="secondary" onClick={save}>
-            <Save size={16} />
-            Save draft
-          </Button>
+          preview ? undefined : (
+            <Button variant="secondary" onClick={save}>
+              <Save size={16} />
+              Save draft
+            </Button>
+          )
         }
       />
       <Notice>
         Frontend demo. Drafts are saved only in this browser. Photos are temporary previews.
-        Publishing and verification need the backend.
+        Publishing and verification need the backend. Never enter passwords, codes, full device
+        identifiers or private evidence in listing fields.
       </Notice>
+      <p role="status">
+        {preview
+          ? 'Read-only saved draft preview. Temporary photos are not persisted.'
+          : dirty
+            ? 'Unsaved changes'
+            : 'No unsaved field changes'}{' '}
+        {saveMessage}
+      </p>
+      <Notice>
+        Changing device details, photos, condition or defects is a material edit: existing
+        inspection eligibility would be invalidated and a new physical inspection required. A
+        price-only edit preserves inspection eligibility, subject to authoritative checks.
+      </Notice>
+      {preview && (
+        <ButtonLink href="/account/listings" variant="secondary">
+          Return to my listings
+        </ButtonLink>
+      )}
       <ol className="form-steps">
         {steps.map((label, i) => (
           <li key={label} className={i === step ? 'active' : i < step ? 'complete' : ''}>
@@ -163,18 +279,33 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
       </ol>
       <form
         className="form-card"
+        noValidate
         onSubmit={(e) => {
           e.preventDefault();
           if (step < 3) next();
           else {
-            save();
-            router.push('/account/listings');
+            if (save()) router.push('/account/listings');
           }
         }}
       >
         {error && (
           <div className="form-error" role="alert">
             {error}
+            <ul>
+              {Object.entries(fieldErrors).map(([field, message]) => (
+                <li key={field}>
+                  <a
+                    href={`#listing-${field}`}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      document.getElementById(`listing-${field}`)?.focus();
+                    }}
+                  >
+                    {message}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
         {step === 0 && (
@@ -184,6 +315,8 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
             <div className="form-grid">
               <Select
                 label="Brand"
+                id="listing-brand"
+                error={fieldErrors.brand}
                 value={draft.brand}
                 onChange={(e) => {
                   setDraft((d) => ({
@@ -202,6 +335,8 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
               </Select>
               <Select
                 label="Model"
+                id="listing-model"
+                error={fieldErrors.model}
                 value={draft.model}
                 onChange={(e) =>
                   setDraft((d) => ({
@@ -219,6 +354,8 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
               </Select>
               <Select
                 label="Storage"
+                id="listing-storage"
+                error={fieldErrors.storage}
                 value={draft.storage}
                 onChange={(e) => set('storage', e.target.value)}
                 required
@@ -237,11 +374,19 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
                 type="number"
                 min={1}
                 max={10000000}
+                id="listing-price"
+                error={fieldErrors.price}
                 value={draft.price}
                 onChange={(e) => set('price', e.target.value)}
                 required
               />
-              <Select label="City" value={draft.city} onChange={(e) => set('city', e.target.value)}>
+              <Select
+                label="City"
+                id="listing-city"
+                error={fieldErrors.city}
+                value={draft.city}
+                onChange={(e) => set('city', e.target.value)}
+              >
                 {cities.map((c) => (
                   <option key={c}>{c}</option>
                 ))}
@@ -253,6 +398,8 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
               />
               <Input
                 label="Device color"
+                id="listing-color"
+                error={fieldErrors.color}
                 value={draft.color}
                 onChange={(e) => set('color', e.target.value)}
                 required
@@ -270,6 +417,8 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
               <Select
                 label="Condition"
                 required
+                id="listing-condition"
+                error={fieldErrors.condition}
                 value={draft.condition}
                 onChange={(e) => set('condition', e.target.value)}
               >
@@ -280,6 +429,8 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
               </Select>
               <Select
                 label="Seller-declared PTA status"
+                id="listing-pta"
+                error={fieldErrors.pta}
                 value={draft.pta}
                 onChange={(e) => set('pta', e.target.value)}
               >
@@ -292,6 +443,8 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
                 type="number"
                 min={0}
                 max={100}
+                id="listing-battery"
+                error={fieldErrors.battery}
                 value={draft.battery}
                 onChange={(e) => set('battery', e.target.value)}
               />
@@ -317,6 +470,8 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
             />
             <Textarea
               label="Description"
+              id="listing-description"
+              error={fieldErrors.description}
               value={draft.description}
               onChange={(e) => set('description', e.target.value)}
               minLength={20}
@@ -328,6 +483,10 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
         {step === 2 && (
           <>
             <h2>Show it honestly.</h2>
+            <p role="status">
+              {photos.length} / 8 temporary photos selected. At least 3 required for future real
+              submission.
+            </p>
             <p className="muted">
               Add 3–8 photos for a real listing. Avoid personal data or visible device identifiers.
             </p>
@@ -400,6 +559,8 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
             <label className="checkbox-label">
               <input
                 type="checkbox"
+                id="listing-consent"
+                aria-invalid={!!fieldErrors.consent}
                 checked={draft.consent}
                 onChange={(e) => set('consent', e.target.checked)}
               />
@@ -413,6 +574,13 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
         {step === 3 && (
           <>
             <h2>Looking good. Take one last look.</h2>
+            <PhotoGallery
+              photos={photos.map((photo) => ({
+                src: photo.url,
+                alt: `Temporary seller preview: ${photo.name}`,
+              }))}
+              label={draft.model || 'Draft'}
+            />
             <div className="preview-summary">
               <p className="eyebrow">
                 {draft.brand} · {draft.storage} GB
@@ -442,7 +610,7 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
           <Button
             type="button"
             variant="secondary"
-            disabled={step === 0}
+            disabled={step === 0 || preview}
             onClick={() => setStep((s) => s - 1)}
           >
             <ArrowLeft size={16} />
@@ -451,12 +619,37 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
           <span>
             {step + 1} of {steps.length}
           </span>
-          <Button>
+          <Button disabled={preview}>
             {step === 3 ? 'Save & view my listings' : 'Continue'}
             <ArrowRight size={16} />
           </Button>
         </div>
       </form>
+      <Dialog
+        open={pendingNavigation !== null}
+        onClose={() => setPendingNavigation(null)}
+        title="Leave unsaved listing?"
+      >
+        <p>
+          Unsaved field changes and temporary photo previews will be lost. Saved fields remain in
+          this browser only when storage is available.
+        </p>
+        <Button type="button" variant="secondary" onClick={() => setPendingNavigation(null)}>
+          Keep editing
+        </Button>
+        <Button
+          type="button"
+          onClick={() => {
+            if (pendingNavigation) {
+              const href = pendingNavigation;
+              setPendingNavigation(null);
+              router.push(href);
+            }
+          }}
+        >
+          Leave form
+        </Button>
+      </Dialog>
     </div>
   );
 }

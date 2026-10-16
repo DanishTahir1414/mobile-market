@@ -50,7 +50,7 @@ Search, brand, city, price, condition, PTA, storage, inspection and ordering use
 
 Chosen instead of hidden component-only filter state because links can be copied, refreshed and revisited with browser Back. Pagination is available when a result set exceeds the page size.
 
-**Tradeoff:** The small six-phone demo applies filters immediately. A large real catalog should debounce text/range input or use an explicit Apply flow and server pagination.
+**Tradeoff:** Desktop filters apply immediately; the mobile dialog keeps pending choices until Apply. Four items per sample page make pagination inspectable. A real catalog needs server pagination and authoritative eligibility.
 
 ## 7. Monochrome interface and system typography
 
@@ -81,3 +81,11 @@ Type checks, lint, domain-focused frontend tests and production build are execut
 The supported browser-control capability was unavailable in this environment. Browser screenshots, full route navigation, viewport overflow checks and end-to-end flows were therefore not claimed as passed. See the verification report for exact results.
 
 Official references: https://nextjs.org/docs/app/getting-started/installation, https://nextjs.org/docs/app/guides/upgrading/version-16, https://react.dev/reference/react/useSyncExternalStore.
+
+## 11. Local workflow scenarios retain the existing demo boundary
+
+Lifecycle transitions reuse the browser draft store and typed pure transition rules; inspection and staff scenarios remain page-local presentations. A saved preview is read-only and never creates or overwrites a draft. Material published edits return to review after confirmation; price-only edits retain their listing state. Storage writes report persistent versus current-tab-only results.
+
+Chosen over fake API routes or a second state library. These scenarios demonstrate controls without implying real moderation, authorization or report issuance. All consequential local transitions identify themselves as demo actions.
+
+Migration: replace store mutations with typed, authorized service adapters and expected revision checks. Keep the pure transition, validation and acknowledgement tests as UI regression coverage, while duplicating authoritative enforcement in the owning services. Real report approval and bookings require transactional backend checks. No backend architecture change is made.

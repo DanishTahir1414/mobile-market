@@ -27,7 +27,7 @@ npm start
 
 - `/`: homepage with search, brands, sample phones and inspection information.
 - `/mobiles`: URL-driven search, filters, sort and reusable listing cards.
-- `/mobiles/iphone-15-pro`: sample device details and separate seller/shop sections.
+- `/mobiles/iphone-15-pro`: shared photo gallery, full-screen keyboard navigation and separate seller/shop sections.
 - `/sell`: four-step form, local draft saving, temporary photo previews and review.
 - `/account`: local dashboard, listings, appointments, favorites and security screens.
 - `/staff`: sample moderation, inspection bench, report review and management screens.
@@ -54,9 +54,11 @@ Shared components use typed props. Stateful interactions are client components; 
 
 ## What works locally
 
-- Search by model, filters, sorting and shareable query parameters.
+- Search by model, filters, sorting, bounded pagination and shareable query parameters. Mobile filters apply only on Apply.
 - Favorite toggling and browser persistence.
-- Creating, saving, editing and deleting local listing drafts.
+- Creating, saving, editing, dedicated read-only preview and deleting local listing drafts.
+- Explicit local lifecycle scenarios: review, rejection/resubmission, sold/withdrawn, expiry/renewal and suspension. No real listing changes.
+- Booking detail timeline, exact-revision acknowledgement demonstration and staff action forms.
 - Brand → model → storage dependent choices and form validation.
 - Temporary photo selection, ordering and removal. Files are **not uploaded**, processed or persisted.
 - Local demo appointment creation, duplicate-slot detection in the current browser state, and cancellation. This does **not** reserve a real shop slot or provide cross-client concurrency control.
@@ -79,3 +81,7 @@ Local storage contains only demo favorites, listing drafts and appointments. Dat
 - [Asset credits](docs/frontend-assets.md): illustrative photograph sources.
 
 No public website deployment was performed. The owner must review shop identity, legal drafts, fees and policies before any real launch.
+
+## Completion audit
+
+See [completion checklist](docs/frontend-completion-checklist.md), [self-review](docs/frontend-review.md) and [verification evidence](docs/frontend-verification.md). Production authorization, media processing, persistent moderation, report issuance and live eligibility remain backend integration work. Unsaved-change protection covers document unload and ordinary links; browser history navigation within the App Router is not intercepted.

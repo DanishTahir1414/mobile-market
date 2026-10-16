@@ -1,3 +1,4 @@
+import { InspectionTracking } from '@/features/account/inspection-tracking';
 import { notFound } from 'next/navigation';
 import {
   AccountOverview,
@@ -24,7 +25,14 @@ const pages = {
   'inspections/acknowledge': Acknowledgement,
 };
 export default async function Page({ params }: { params: Promise<{ section?: string[] }> }) {
-  const key = (await params).section?.join('/') || 'overview';
+  const segments = (await params).section || [];
+  const key = segments.join('/') || 'overview';
+  if (
+    segments.length === 2 &&
+    segments[0] === 'inspections' &&
+    !['book', 'acknowledge'].includes(segments[1])
+  )
+    return <InspectionTracking id={segments[1]} />;
   const Component = pages[key as keyof typeof pages];
   if (!Component) notFound();
   return <Component />;

@@ -1,5 +1,8 @@
 'use client';
 import Link from 'next/link';
+import { FindingsAcknowledgement } from './inspection-tracking';
+import { ListingActions } from './listing-actions';
+import { listingStatuses } from '@/lib/listing-lifecycle';
 import { useState } from 'react';
 import { ArrowUpRight, CalendarDays, Heart, Smartphone, ShieldCheck, Trash2 } from 'lucide-react';
 import { useDemo } from '@/components/demo-provider';
@@ -102,9 +105,16 @@ export function MyListings() {
         description="Your drafts, their details and what comes next."
         action={<ButtonLink href="/sell">New listing</ButtonLink>}
       />
-      <div className="tabs" role="tablist" aria-label="Listing status">
-        {['all', 'draft', 'pending_review', 'published', 'sold'].map((t) => (
-          <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
+      <Notice>
+        Local lifecycle simulations only. No real listing is submitted or moderated.{' '}
+        <Link href="/mobiles/sample-sold">View sold example</Link>,{' '}
+        <Link href="/mobiles/sample-withdrawn">withdrawn</Link>,{' '}
+        <Link href="/mobiles/sample-expired">expired</Link>,{' '}
+        <Link href="/mobiles/sample-suspended">suspended</Link>.
+      </Notice>
+      <div className="tabs" aria-label="Listing status filters">
+        {['all', ...listingStatuses].map((t) => (
+          <button key={t} aria-pressed={tab === t} onClick={() => setTab(t)}>
             {t.replace('_', ' ')}
             {t === 'all' && ` (${drafts.length})`}
           </button>
@@ -122,9 +132,7 @@ export function MyListings() {
                 </p>
               </div>
               <div className="row-actions">
-                <ButtonLink href={`/account/listings/${d.id}/edit`} variant="secondary">
-                  Edit draft
-                </ButtonLink>
+                <ListingActions draft={d} />
                 <Button
                   variant="ghost"
                   aria-label={`Delete ${d.model || 'draft'}`}
@@ -184,7 +192,9 @@ export function Inspections() {
             <div className="list-row" key={a.id}>
               <div>
                 <span className="status-label">{a.status} · local demo</span>
-                <h3>{a.listingName}</h3>
+                <h3>
+                  <Link href={`/account/inspections/${a.id}`}>{a.listingName}</Link>
+                </h3>
                 <p>{formatShopDate(a.startsAt)}</p>
               </div>
               {a.status === 'booked' && (
@@ -414,35 +424,14 @@ export function Notifications() {
   );
 }
 export function Acknowledgement() {
-  const { notify } = useDemo();
-  const [checked, setChecked] = useState(false);
   return (
     <>
       <PageHeading
         title="Review inspection findings"
-        description="Seller acknowledgement applies to one exact findings revision."
+        description="Local exact-revision acknowledgement demonstration."
       />
-      <Notice>
-        Sample findings only. A real acknowledgement requires a verified seller and current backend
-        revision.
-      </Notice>
-      <div className="panel">
-        <h2>Sample findings · revision 1</h2>
-        <p>
-          Display and basic functions tested. Device was not opened, so internal repairs could not
-          be assessed. This is an illustrative report.
-        </p>
-        <label className="checkbox-label">
-          <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />
-          I have reviewed these sample findings.
-        </label>
-        <Button
-          disabled={!checked}
-          onClick={() => notify('Demo review noted. No inspection acknowledgement was submitted.')}
-        >
-          Preview acknowledgement
-        </Button>
-      </div>
+      <Notice>No real acknowledgement is submitted or persisted.</Notice>
+      <FindingsAcknowledgement />
     </>
   );
 }

@@ -1,7 +1,14 @@
 /** Seller claims and shop observations deliberately use separate models. */
 export type InspectionState = 'current' | 'not_inspected' | 'expired' | 'revoked' | 'unavailable';
 export type ListingStatus =
-  'draft' | 'pending_review' | 'published' | 'rejected' | 'sold' | 'withdrawn';
+  | 'draft'
+  | 'pending_review'
+  | 'published'
+  | 'rejected'
+  | 'sold'
+  | 'withdrawn'
+  | 'expired'
+  | 'suspended';
 export interface Listing {
   id: string;
   brand: string;
@@ -15,6 +22,7 @@ export interface Listing {
   pta: 'Approved' | 'Not approved' | 'Unknown';
   battery: number | null;
   image: string;
+  photos?: { src: string; alt: string }[];
   inspection: InspectionState;
   listedAt: string;
   description: string;

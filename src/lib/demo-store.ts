@@ -32,7 +32,16 @@ const storedDraft = z.object({
   call: z.boolean(),
   whatsapp: z.boolean(),
   consent: z.boolean(),
-  status: z.enum(['draft', 'pending_review', 'published', 'rejected', 'sold', 'withdrawn']),
+  status: z.enum([
+    'draft',
+    'pending_review',
+    'published',
+    'rejected',
+    'sold',
+    'withdrawn',
+    'expired',
+    'suspended',
+  ]),
   updatedAt: z.string(),
 });
 const storedState = z.object({
@@ -85,10 +94,12 @@ export function subscribeToDemo(listener: () => void) {
 
 export function updateDemo(updater: (current: DemoState) => DemoState) {
   snapshot = updater(getDemoSnapshot());
+  let persisted = true;
   try {
     window.localStorage.setItem(storageKey, JSON.stringify(snapshot));
   } catch {
-    /* Blocked/full storage falls back to current-tab memory. */
+    persisted = false;
   }
   listeners.forEach((notify) => notify());
+  return persisted;
 }

@@ -57,6 +57,14 @@ export default async function Page({ params }: { params: Promise<{ code: string 
             <span className="status-label">{result.replace('_', ' ')}</span>
           </div>
         ))}
+        <h3>Observed defects</h3>
+        <p>Illustrative cosmetic frame wear. No real device was inspected.</p>
+        <h3>Correction and replacement history</h3>
+        <p>
+          Sample revision 1 replaced by clerical revision 2 for a label correction. Original
+          observation date and validity remain unchanged. The previous report would be revoked and
+          linked to its replacement.
+        </p>
         <h3>Testing limitations</h3>
         <p>
           The device was not opened. Water resistance, future reliability and ownership are not

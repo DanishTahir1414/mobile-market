@@ -93,6 +93,26 @@ export const demoListings: Listing[] = [
     image: '/images/samsung-cream.jpg',
   },
 ];
+for (const status of ['sold', 'withdrawn', 'expired', 'suspended'] as const) {
+  demoListings.push({
+    ...demoListings[0],
+    id: `sample-${status}`,
+    status,
+    inspection: 'unavailable',
+  });
+}
+for (const listing of demoListings) {
+  listing.photos = [
+    {
+      src: listing.image,
+      alt: `Illustrative ${listing.model} device photograph; not the advertised specimen`,
+    },
+    {
+      src: listing.brand === 'Apple' ? '/images/iphone-dark.jpg' : '/images/samsung-cream.jpg',
+      alt: 'Additional illustrative phone photograph; model and color may differ',
+    },
+  ];
+}
 export const inspectionChecks = [
   ['Device identity', 'pass', 'Device matched to the listing at the time of inspection.'],
   ['Body & frame', 'pass', 'Minor signs of everyday use.'],

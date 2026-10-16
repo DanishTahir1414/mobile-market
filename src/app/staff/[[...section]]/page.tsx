@@ -1,3 +1,4 @@
+import { AppointmentDetail, AbuseDetail, StaffDetail } from '@/features/staff/detail-workflows';
 import { notFound } from 'next/navigation';
 import { WorkspaceShell } from '@/components/layout/workspace-shell';
 import { AuthForm, type AuthMode } from '@/features/auth/auth-form';
@@ -39,8 +40,13 @@ export default async function Page({ params }: { params: Promise<{ section?: str
   const key = segments.join('/') || 'overview';
   if (authModes[key]) return <AuthForm mode={authModes[key]} />;
   let content;
-  if (segments[0] === 'moderation' && segments[1]) content = <ModerationDetail id={segments[1]} />;
-  else if (segments[0] === 'inspections' && segments[1]) content = <InspectionBench />;
+  if (segments.length === 2 && segments[0] === 'appointments')
+    content = <AppointmentDetail id={segments[1]} />;
+  else if (key === 'abuse/demo') content = <AbuseDetail />;
+  else if (key === 'team/demo') content = <StaffDetail />;
+  else if (segments.length === 2 && segments[0] === 'moderation' && segments[1])
+    content = <ModerationDetail id={segments[1]} />;
+  else if (key === 'inspections/demo') content = <InspectionBench />;
   else {
     const Component = pages[key as keyof typeof pages];
     if (!Component) notFound();

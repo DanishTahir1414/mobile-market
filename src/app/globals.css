@@ -1233,9 +1233,7 @@ main {
   font-size: 10px;
   color: #92927e;
 }
-.filter-toggle,
-.filter-close,
-.filter-apply {
+.filter-toggle {
   display: none;
 }
 .price-range {
@@ -1303,30 +1301,6 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
   gap: 38px;
-}
-.detail-image {
-  position: relative;
-  aspect-ratio: 1.15;
-  border-radius: 10px;
-  overflow: hidden;
-  background: #f4f4ed;
-}
-.detail-image > img {
-  object-fit: cover;
-}
-.photo-label {
-  position: absolute;
-  left: 15px;
-  bottom: 15px;
-  font-size: 10px;
-  padding: 6px 10px;
-  border-radius: 4px;
-  background: #ffffffed;
-  color: #777762;
-}
-.detail-image .favorite-button {
-  width: 40px;
-  height: 40px;
 }
 .detail-summary .sticky-card {
   position: sticky;
@@ -2946,16 +2920,6 @@ th {
   .filter-panel {
     display: none;
   }
-  .filter-panel--open {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: white;
-    z-index: 50;
-    overflow-y: auto;
-    padding: 25px 22px calc(95px + env(safe-area-inset-bottom));
-    border: none;
-  }
   .filter-heading {
     margin-bottom: 23px;
   }
@@ -2966,19 +2930,6 @@ th {
     font-size: 11px;
     margin-left: auto;
     margin-right: 20px;
-  }
-  .filter-close {
-    display: flex;
-    padding: 8px;
-  }
-  .filter-apply {
-    display: flex;
-    position: fixed;
-    bottom: 20px;
-    left: 22px;
-    right: 22px;
-    z-index: 51;
-    width: calc(100% - 44px);
   }
   .filter-panel .field {
     margin-bottom: 20px;
@@ -3029,9 +2980,6 @@ th {
   .detail-summary {
     grid-row: 2;
   }
-  .detail-image {
-    aspect-ratio: 1.2;
-  }
   .detail-summary .sticky-card {
     position: static;
     padding: 23px;
@@ -3070,10 +3018,6 @@ th {
   }
   .spec-grid dt {
     font-size: 10px;
-  }
-  .photo-label {
-    font-size: 9px;
-    max-width: 85%;
   }
   .form-steps {
     gap: 5px;
@@ -3358,6 +3302,108 @@ th {
 }
 
 /* The fixed mobile Sell entry keeps the action available on narrow phones. */
+.gallery-photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--surface-muted, #f2f2f2);
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.gallery-photo img {
+  object-fit: contain;
+}
+.gallery-favorite .favorite-button {
+  position: static;
+  margin-top: 12px;
+}
+.gallery-photo p {
+  padding: 24px;
+}
+.gallery-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+.gallery-thumbnails {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px;
+  margin-bottom: 12px;
+}
+.gallery-thumbnails button {
+  flex: 0 0 80px;
+  padding: 3px;
+  border: 1px solid #d4d4d4;
+  background: white;
+  border-radius: 8px;
+}
+.gallery-thumbnails button[aria-pressed='true'] {
+  border: 2px solid #171717;
+}
+.gallery-dialog {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+}
+.gallery-dialog .gallery-photo {
+  height: min(65dvh, 800px);
+  aspect-ratio: auto;
+}
+.status-timeline {
+  padding-left: 24px;
+}
+.status-timeline li {
+  padding: 12px;
+  border-left: 1px solid #d4d4d4;
+}
+.status-timeline li span {
+  display: block;
+}
+.status-timeline li[aria-current='step'] {
+  outline: 2px solid #171717;
+}
+.row-actions {
+  flex-wrap: wrap;
+}
+.workspace-nav,
+.workspace-content,
+.browse-layout > section,
+.detail-layout > *,
+.list-row > div {
+  min-width: 0;
+}
+.panel,
+.form-card,
+.list-row {
+  overflow-wrap: anywhere;
+}
+.tabs {
+  overflow-x: auto;
+}
+@media (max-width: 639px) {
+  .gallery-controls .button {
+    font-size: 12px;
+    padding: 10px;
+    min-height: 44px;
+  }
+  .dialog {
+    max-height: 94dvh;
+    overflow-y: auto;
+  }
+  .list-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
 @media (max-width: 400px) {
   .header-actions .sell-button {
     display: none;
@@ -3371,5 +3417,17 @@ th {
   }
   .hero-inspection p {
     font-size: 8px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .filter-dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
   }
 }

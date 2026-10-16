@@ -11,7 +11,7 @@ import {
 interface DemoContext extends DemoState {
   ready: boolean;
   toggleFavorite: (id: string) => void;
-  saveDraft: (draft: ListingDraft) => void;
+  saveDraft: (draft: ListingDraft) => boolean;
   removeDraft: (id: string) => void;
   book: (appointment: Appointment) => boolean;
   cancelBooking: (id: string) => void;

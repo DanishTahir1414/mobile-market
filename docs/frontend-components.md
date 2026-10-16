@@ -34,3 +34,13 @@ Return backend errors as meaningful form states. Keep request IDs available to s
 ## Comments and formatting
 
 Prettier formats source. Name components and functions after their visible job. Comments explain non-obvious constraints such as temporary photo URL cleanup, hydration, untrusted local storage and the lack of backend authority. Avoid comments that simply repeat the next line.
+
+## Workflow components
+
+- `PhotoGallery`: one implementation for public detail, staff review and temporary draft review. Native dialog, unique heading IDs, thumbnails, keyboard navigation, reserved image area and load-error fallback.
+- `ListingActions`: local lifecycle confirmations and saved-preview links. Rules and status explanations live in `listing-lifecycle.ts`.
+- `StatusTimeline`, `InspectionTracking`, `FindingsAcknowledgement`: booking scenario progression and revision-bound acknowledgement. Shared findings/gate rules live in `inspection-workflow.ts`.
+- `detail-workflows.tsx`: focused staff appointment, abuse, permission, catalog and approval presentations. Forms validate proposals and explain backend unavailability.
+- `paginate`: pure finite integer bounds and slices, tested independently of routing.
+
+Photos remain temporary object URLs and are released on removal or unmount. No upload adapter or processing simulation was added. Draft saving returns whether browser storage accepted the write; a failure keeps current-tab memory and displays an explicit warning.

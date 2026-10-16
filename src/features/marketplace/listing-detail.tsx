@@ -1,5 +1,5 @@
 'use client';
-import Image from 'next/image';
+import { PhotoGallery } from '@/components/listings/photo-gallery';
 import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowLeft, MapPin, Phone, MessageCircle, Flag, Share2, ShieldCheck } from 'lucide-react';
@@ -20,7 +20,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
     ['Color', listing.color],
     ['Condition', listing.condition],
     ['PTA status', listing.pta],
-    ['Battery claim', listing.battery ? `${listing.battery}%` : 'Not supplied'],
+    ['Battery claim', listing.battery !== null ? `${listing.battery}%` : 'Not supplied'],
     ['Accessories', listing.accessories.join(', ')],
   ];
   return (
@@ -36,15 +36,16 @@ export function ListingDetail({ listing }: { listing: Listing }) {
       </div>
       <div className="detail-layout">
         <section>
-          <div className="detail-image">
-            <Image
-              src={listing.image}
-              alt={`Illustrative ${listing.model} photograph`}
-              fill
-              priority
-              sizes="(max-width: 850px) 90vw, 55vw"
-            />
-            <span className="photo-label">Illustrative photo · not an actual sale</span>
+          <PhotoGallery
+            photos={
+              listing.photos || [
+                { src: listing.image, alt: `Illustrative ${listing.model} photograph` },
+              ]
+            }
+            label={listing.model}
+          />
+          <p className="tiny-text">Illustrative photographs · not the actual device for sale.</p>
+          <div className="gallery-favorite">
             <FavoriteButton id={listing.id} />
           </div>
           <div className="detail-section">
@@ -96,15 +97,27 @@ export function ListingDetail({ listing }: { listing: Listing }) {
             <p className="seller-caption">SAMPLE PRIVATE SELLER</p>
             <h3>Demo seller</h3>
             <p className="muted">Connect directly. Meet and check before paying.</p>
-            <Button className="full-width" onClick={() => setDialog('contact')}>
+            <Button
+              disabled={listing.status !== 'published'}
+              className="full-width"
+              onClick={() => setDialog('contact')}
+            >
               <Phone size={17} />
               Call seller
             </Button>
-            <Button variant="secondary" className="full-width" onClick={() => setDialog('contact')}>
+            <Button
+              disabled={listing.status !== 'published'}
+              variant="secondary"
+              className="full-width"
+              onClick={() => setDialog('contact')}
+            >
               <MessageCircle size={17} />
               WhatsApp seller
             </Button>
-            <p className="tiny-text">Contact is unavailable for fictional inventory.</p>
+            <p className="tiny-text">
+              Status: {listing.status.replaceAll('_', ' ')}. Contact is unavailable for fictional
+              inventory.
+            </p>
             <hr />
             <Button
               variant="ghost"

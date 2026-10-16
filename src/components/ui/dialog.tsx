@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Button } from './button';
 /** Native dialog provides focus containment, Escape handling and focus return. */
@@ -8,13 +8,16 @@ export function Dialog({
   onClose,
   title,
   children,
+  className = '',
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
+  className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   useEffect(() => {
     if (open && !ref.current?.open) ref.current?.showModal();
     if (!open && ref.current?.open) ref.current?.close();
@@ -24,12 +27,12 @@ export function Dialog({
       ref={ref}
       onCancel={onClose}
       onClose={onClose}
-      aria-labelledby="dialog-title"
-      className="dialog"
+      aria-labelledby={titleId}
+      className={`dialog ${className}`}
     >
       <div className="dialog__heading">
-        <h2 id="dialog-title">{title}</h2>
-        <Button variant="ghost" onClick={onClose} aria-label="Close dialog">
+        <h2 id={titleId}>{title}</h2>
+        <Button type="button" variant="ghost" onClick={onClose} aria-label="Close dialog">
           <X size={20} />
         </Button>
       </div>

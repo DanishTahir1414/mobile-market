@@ -1,5 +1,7 @@
 'use client';
 import Link from 'next/link';
+import { PhotoGallery } from '@/components/listings/photo-gallery';
+import { CatalogEditor, ApprovalGates } from './detail-workflows';
 import { useState } from 'react';
 import { CalendarDays, ClipboardCheck, ShieldCheck, ArrowRight } from 'lucide-react';
 import { demoListings, inspectionChecks } from '@/lib/demo-data';
@@ -68,6 +70,8 @@ export function StaffOverview() {
   );
 }
 export function Moderation() {
+  const [brand, setBrand] = useState('');
+  const queue = demoListings.filter((listing) => listing.status === 'published');
   return (
     <>
       <PageHeading
@@ -78,25 +82,40 @@ export function Moderation() {
         Sample queue. Decisions are unavailable until backend authorization is connected.
       </Notice>
       <div className="panel">
-        {demoListings.slice(0, 3).map((l) => (
-          <div className="list-row" key={l.id}>
-            <div>
-              <span className="status-label">Sample · awaiting review</span>
-              <h3>{l.model}</h3>
-              <p>
-                {formatPrice(l.price)} · {l.city}
-              </p>
+        <Select label="Queue brand filter" value={brand} onChange={(e) => setBrand(e.target.value)}>
+          <option value="">All brands</option>
+          {Object.keys(catalog).map((value) => (
+            <option key={value}>{value}</option>
+          ))}
+        </Select>
+        {!queue.some((listing) => !brand || listing.brand === brand) && (
+          <EmptyState
+            title="No sample listings in this queue"
+            description="Choose another brand or clear the filter."
+          />
+        )}
+        {queue
+          .filter((listing) => !brand || listing.brand === brand)
+          .map((l) => (
+            <div className="list-row" key={l.id}>
+              <div>
+                <span className="status-label">Sample · awaiting review</span>
+                <h3>{l.model}</h3>
+                <p>
+                  {formatPrice(l.price)} · {l.city}
+                </p>
+              </div>
+              <ButtonLink variant="secondary" href={`/staff/moderation/${l.id}`}>
+                Review details
+              </ButtonLink>
             </div>
-            <ButtonLink variant="secondary" href={`/staff/moderation/${l.id}`}>
-              Review details
-            </ButtonLink>
-          </div>
-        ))}
+          ))}
       </div>
     </>
   );
 }
 export function ModerationDetail({ id }: { id: string }) {
+  const [stale, setStale] = useState(false);
   const l = demoListings.find((x) => x.id === id);
   const { notify } = useDemo();
   if (!l)
@@ -109,7 +128,19 @@ export function ModerationDetail({ id }: { id: string }) {
         title={`Review ${l.model}`}
         description="Keep seller declarations separate from shop inspection observations."
       />
-      <Notice>This is a read-only review of a fictional listing.</Notice>
+      <PhotoGallery photos={l.photos || []} label={l.model} />
+      <Notice>
+        Reviewing sample listing revision 1, device revision 1. Decisions do not update inventory.
+      </Notice>
+      <Button variant="secondary" onClick={() => setStale(true)}>
+        Demonstrate newer revision conflict
+      </Button>
+      {stale && (
+        <Notice>
+          Conflict: revision 2 is now the sample current revision. Reload the review before
+          deciding.
+        </Notice>
+      )}
       <div className="panel">
         <dl className="spec-grid">
           {[
@@ -139,7 +170,7 @@ export function ModerationDetail({ id }: { id: string }) {
             <option>Request changes</option>
           </Select>
           <Textarea label="Review reason" required minLength={5} />
-          <Button>Preview decision</Button>
+          <Button disabled={stale}>Preview decision</Button>
         </form>
       </div>
     </>
@@ -147,6 +178,13 @@ export function ModerationDetail({ id }: { id: string }) {
 }
 export function AppointmentCalendar() {
   const { appointments } = useDemo();
+  const dateGroups = Map.groupBy(
+    [...appointments].sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
+    (appointment) =>
+      new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(
+        new Date(appointment.startsAt),
+      ),
+  );
   return (
     <>
       <PageHeading
@@ -159,21 +197,31 @@ export function AppointmentCalendar() {
       </Notice>
       {appointments.length ? (
         <div className="panel">
-          {appointments.map((a) => (
-            <div className="list-row" key={a.id}>
-              <div>
-                <h3>{a.listingName}</h3>
-                <p>
-                  {new Date(a.startsAt).toLocaleString('en-PK', {
-                    timeZone: 'Asia/Karachi',
-                  })}{' '}
-                  · {a.status}
-                </p>
-              </div>
-              <ButtonLink href="/staff/inspections/demo" variant="secondary">
-                Open sample checklist
-              </ButtonLink>
-            </div>
+          {Array.from(dateGroups, ([date, bookings]) => (
+            <section key={date}>
+              <h2>{date} · Asia/Karachi</h2>
+              {bookings.map((appointment) => (
+                <div className="list-row" key={appointment.id}>
+                  <div>
+                    <h3>
+                      <Link href={`/staff/appointments/${appointment.id}`}>
+                        {appointment.listingName}
+                      </Link>
+                    </h3>
+                    <p>
+                      {new Intl.DateTimeFormat('en-PK', {
+                        timeZone: 'Asia/Karachi',
+                        timeStyle: 'short',
+                      }).format(new Date(appointment.startsAt))}{' '}
+                      · {appointment.status}
+                    </p>
+                  </div>
+                  <ButtonLink href={`/staff/appointments/${appointment.id}`} variant="secondary">
+                    Appointment detail
+                  </ButtonLink>
+                </div>
+              ))}
+            </section>
           ))}
         </div>
       ) : (
@@ -191,6 +239,8 @@ export function AppointmentCalendar() {
   );
 }
 export function InspectionBench() {
+  const [dirty, setDirty] = useState(false),
+    [identity, setIdentity] = useState('');
   const { notify } = useDemo();
   const [results, setResults] = useState<Record<string, string>>({});
   return (
@@ -205,13 +255,32 @@ export function InspectionBench() {
       </Notice>
       <form
         className="form-card"
+        onChange={() => setDirty(true)}
         onSubmit={(e) => {
           e.preventDefault();
+          if (identity !== 'Match observed' || results['Device identity'] !== 'pass') {
+            notify('Identity mismatch or missing identity pass blocks submission.');
+            return;
+          }
           notify('Sample checklist validated. Findings were not saved to a report.');
         }}
       >
-        <Input label="Sample listing reference" defaultValue="Sample iPhone 15 Pro" readOnly />
-        <Select label="Device identity matches listing" required>
+        <p role="status">
+          {dirty
+            ? 'Unsaved checklist; findings remain in this page only.'
+            : 'No checklist changes.'}
+        </p>
+        <Input
+          label="Assigned device context · device revision 1 · assignment unavailable"
+          defaultValue="Sample iPhone 15 Pro"
+          readOnly
+        />
+        <Select
+          label="Device identity matches listing"
+          required
+          value={identity}
+          onChange={(e) => setIdentity(e.target.value)}
+        >
           <option value="">Choose an observation</option>
           <option>Match observed</option>
           <option>Mismatch observed</option>
@@ -274,6 +343,7 @@ export function ReportReview() {
         title="Report review & approval"
         description="A second person. An exact revision. A considered decision."
       />
+      <ApprovalGates />
       <Notice>Sample report only. No report can be issued or revoked by this frontend.</Notice>
       <div className="panel">
         <h2>iPhone 15 Pro · sample findings</h2>
@@ -353,6 +423,9 @@ export function Team() {
         Invitations, permission changes and suspension require a recently authenticated manager.
         This preview never sends invitations.
       </Notice>
+      <ButtonLink href="/staff/team/demo" variant="secondary">
+        Open illustrative staff detail and permissions
+      </ButtonLink>
       <form className="form-card" onSubmit={(e) => e.preventDefault()}>
         <Input label="Invitation email" type="email" placeholder="staff@example.com" />
         <fieldset>
@@ -389,6 +462,7 @@ export function Catalog() {
           <option key={b}>{b}</option>
         ))}
       </Select>
+      <CatalogEditor />
       <div className="table-wrap">
         <table>
           <thead>
@@ -415,6 +489,10 @@ export function Catalog() {
   );
 }
 export function ShopSettings() {
+  const [dirty, setDirty] = useState(false),
+    [policy, setPolicy] = useState(
+      'Inspection is a dated condition observation, not a warranty. Final policy requires owner review.',
+    );
   const { notify } = useDemo();
   return (
     <>
@@ -423,8 +501,16 @@ export function ShopSettings() {
         description="Branding, location and the policies customers see."
       />
       <Notice>Settings below are editable form previews. Nothing is saved or published.</Notice>
+      <p role="status">
+        {dirty ? 'Unsaved settings proposal. Backend saving unavailable.' : 'No settings changes.'}
+      </p>
+      <section className="panel">
+        <h2>Draft inspection policy preview</h2>
+        <p>{policy}</p>
+      </section>
       <form
         className="form-card"
+        onChange={() => setDirty(true)}
         onSubmit={(e) => {
           e.preventDefault();
           notify('Settings validated. Nothing was saved or published.');
@@ -438,7 +524,8 @@ export function ShopSettings() {
         <Input label="Display timezone" value="Asia/Karachi" readOnly />
         <Textarea
           label="Inspection policy · owner-review draft"
-          defaultValue="Inspection is a dated condition observation, not a warranty. Validity, cancellations and refunds need owner review."
+          value={policy}
+          onChange={(e) => setPolicy(e.target.value)}
         />
         <Textarea
           label="Terms · owner-review draft"
@@ -460,6 +547,9 @@ export function AbuseQueue() {
         title="Abuse reports"
         description="Review concerns and record clear resolutions."
       />
+      <ButtonLink href="/staff/abuse/demo" variant="secondary">
+        Open illustrative report and resolution form
+      </ButtonLink>
       <EmptyState
         title="No connected reports"
         description="Reports and resolution actions will appear when the backend is integrated."

@@ -3326,12 +3326,9 @@ th {
   touch-action: pan-y;
 }
 .gallery-open {
-  position: absolute;
-  inset: 0;
   width: 100%;
+  padding: 0;
   border: 0;
-  border-radius: 12px;
-  background: transparent;
   cursor: zoom-in;
 }
 .gallery-controls {

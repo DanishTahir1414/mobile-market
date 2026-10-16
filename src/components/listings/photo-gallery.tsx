@@ -9,10 +9,24 @@ interface ListingPhoto {
   src: string;
   alt: string;
 }
-function Photo({ photo, priority = false }: { photo?: ListingPhoto; priority?: boolean }) {
+function Photo({
+  photo,
+  priority = false,
+  onOpen,
+}: {
+  photo?: ListingPhoto;
+  priority?: boolean;
+  onOpen?: () => void;
+}) {
   const [failed, setFailed] = useState(false);
+  const Container = onOpen ? 'button' : 'div';
   return (
-    <div className="gallery-photo">
+    <Container
+      type={onOpen ? 'button' : undefined}
+      className={`gallery-photo${onOpen ? ' gallery-open' : ''}`}
+      onClick={onOpen}
+      aria-label={onOpen ? 'View photo full screen' : undefined}
+    >
       {!photo || failed ? (
         <p role="status">Photo unavailable. Other listing details remain available.</p>
       ) : (
@@ -26,7 +40,7 @@ function Photo({ photo, priority = false }: { photo?: ListingPhoto; priority?: b
           onError={() => setFailed(true)}
         />
       )}
-    </div>
+    </Container>
   );
 }
 export function PhotoGallery({ photos, label }: { photos: ListingPhoto[]; label: string }) {
@@ -84,19 +98,15 @@ export function PhotoGallery({ photos, label }: { photos: ListingPhoto[]; label:
         key={photos[current]?.src || 'missing'}
         photo={photos[current]}
         priority={!fullscreen}
+        onOpen={
+          !fullscreen && photos.length
+            ? () => {
+                if (!touch.current.swiped) setOpen(true);
+                touch.current.swiped = false;
+              }
+            : undefined
+        }
       />
-      {!fullscreen && (
-        <button
-          type="button"
-          className="gallery-open"
-          aria-label="Open full-screen photos"
-          disabled={!photos.length}
-          onClick={() => {
-            if (!touch.current.swiped) setOpen(true);
-            touch.current.swiped = false;
-          }}
-        />
-      )}
       {controls}
     </div>
   );

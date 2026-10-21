@@ -2,14 +2,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Check, ImagePlus, Save, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, ButtonLink } from '@/components/ui/button';
 import { Input, Select, Textarea } from '@/components/ui/field';
-import { Notice } from '@/components/ui/empty-state';
+import { EmptyState, Notice } from '@/components/ui/empty-state';
 import { PageHeading } from '@/components/ui/page-heading';
 import { useDemo } from '@/components/demo-provider';
 import { catalog, cities } from '@/lib/catalog';
 import { draftSchema } from '@/lib/validation';
 import { formatPrice } from '@/lib/format';
+import { isEditable, nextStatus, statusHelp, statusLabels } from '@/lib/listing-lifecycle';
 import type { ListingDraft } from '@/lib/types';
 const empty: ListingDraft = {
   id: '',
@@ -136,6 +137,35 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
       return p.filter((x) => x.id !== id);
     });
   };
+  // Live, sold and pending ads are not edited in place: withdrawing first keeps buyers from
+  // seeing half-finished changes and keeps review meaningful.
+  if (!isEditable(draft.status))
+    return (
+      <div className="container page-space narrow-page">
+        <EmptyState
+          title={`This ad is ${statusLabels[draft.status].toLowerCase()}`}
+          description={statusHelp[draft.status]}
+          action={<ButtonLink href="/account/listings">Back to my listings</ButtonLink>}
+        />
+      </div>
+    );
+  // Validates every step again so a skipped or stale field cannot slip through to review.
+  const submitForReview = () => {
+    const result = draftSchema.safeParse(draft);
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
+    if (!draft.call && !draft.whatsapp) {
+      setError('Choose at least one contact option.');
+      return;
+    }
+    const status = nextStatus(draft.status, draft.status === 'rejected' ? 'resubmit' : 'submit');
+    if (!status) return;
+    saveDraft({ ...draft, status, updatedAt: new Date().toISOString() });
+    notify('Marked as submitted on this device only. Nothing was sent to the shop yet.');
+    router.push('/account/listings');
+  };
   return (
     <div className="container page-space narrow-page">
       <PageHeading
@@ -166,10 +196,7 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
         onSubmit={(e) => {
           e.preventDefault();
           if (step < 3) next();
-          else {
-            save();
-            router.push('/account/listings');
-          }
+          else submitForReview();
         }}
       >
         {error && (
@@ -433,8 +460,9 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
               <p>{photos.length} temporary photo previews</p>
             </div>
             <Notice>
-              Submission is unavailable in this frontend. Save the draft to keep your details.
-              Photos must be added again after a reload.
+              Submitting marks this ad as waiting for review on this device only; the shop is not
+              told yet. Verification is optional and can be added any time. Photos must be added
+              again after a reload.
             </Notice>
           </>
         )}
@@ -452,7 +480,11 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
             {step + 1} of {steps.length}
           </span>
           <Button>
-            {step === 3 ? 'Save & view my listings' : 'Continue'}
+            {step === 3
+              ? draft.status === 'rejected'
+                ? 'Resubmit for review'
+                : 'Submit for review'
+              : 'Continue'}
             <ArrowRight size={16} />
           </Button>
         </div>

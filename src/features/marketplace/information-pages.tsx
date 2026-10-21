@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import {
@@ -97,7 +98,7 @@ export function InspectionExplainer() {
     </div>
   );
 }
-export function ShopPage() {
+export function ShopPage({ photo }: { photo?: { src: string; alt: string } | null }) {
   return (
     <div className="container page-space">
       <PageHeading
@@ -106,12 +107,18 @@ export function ShopPage() {
         description="The marketplace is designed around one existing mobile shop."
       />
       <div className="shop-grid">
-        <div className="shop-map">
-          <MapPin size={54} strokeWidth={1} />
-          <strong>Shop location coming soon</strong>
-          <p>A verified address will appear here.</p>
-          <span>Map is intentionally unavailable until configured.</span>
-        </div>
+        {photo ? (
+          <div className="shop-photo">
+            <Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 850px) 90vw, 50vw" />
+          </div>
+        ) : (
+          <div className="shop-map">
+            <MapPin size={54} strokeWidth={1} />
+            <strong>Shop location coming soon</strong>
+            <p>A verified address will appear here.</p>
+            <span>Map is intentionally unavailable until configured.</span>
+          </div>
+        )}
         <div className="panel">
           <p className="eyebrow">MOBILE MARKET</p>
           <h2>Come say hello.</h2>

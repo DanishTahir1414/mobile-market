@@ -11,6 +11,11 @@ export interface Filters {
   inspected?: string;
   sort?: string;
 }
+/** Cover first, then extra photos, without duplicates; capped to match the seller form. */
+export function listingPhotos(listing: Listing) {
+  return [...new Set([listing.image, ...(listing.gallery ?? [])])].slice(0, 8);
+}
+
 /** Pure filtering keeps URL-driven browse behavior testable without a browser. */
 export function filterListings(listings: Listing[], filters: Filters) {
   const query = (filters.query || '').trim().toLowerCase();

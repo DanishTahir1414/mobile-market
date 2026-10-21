@@ -8,7 +8,18 @@ import { EmptyState, Notice } from '@/components/ui/empty-state';
 import { Input, Select } from '@/components/ui/field';
 import { PageHeading } from '@/components/ui/page-heading';
 import { ListingGrid } from '@/components/listings/listing-grid';
+import { Dialog } from '@/components/ui/dialog';
 import { demoListings } from '@/lib/demo-data';
+import {
+  actionLabels,
+  isEditable,
+  needsConfirmation,
+  sellerActions,
+  statusHelp,
+  statusLabels,
+  type SellerAction,
+} from '@/lib/listing-lifecycle';
+import type { ListingStatus } from '@/lib/types';
 import { formatPrice, formatShopDate } from '@/lib/format';
 export function AccountOverview() {
   const { drafts, favorites, appointments } = useDemo();
@@ -58,7 +69,7 @@ export function AccountOverview() {
               <div>
                 <strong>{d.model || 'Untitled phone'}</strong>
                 <p>
-                  {d.status.replace('_', ' ')} · {formatPrice(Number(d.price) || 0)}
+                  {statusLabels[d.status]} · {formatPrice(Number(d.price) || 0)}
                 </p>
               </div>
               <Link className="text-link" href={`/account/listings/${d.id}/edit`}>
@@ -91,63 +102,151 @@ export function AccountOverview() {
     </>
   );
 }
+const listingTabs: (ListingStatus | 'all')[] = [
+  'all',
+  'draft',
+  'pending_review',
+  'published',
+  'rejected',
+  'sold',
+  'withdrawn',
+];
+
 export function MyListings() {
-  const { drafts, removeDraft, notify } = useDemo();
-  const [tab, setTab] = useState('all');
+  const { drafts, removeDraft, changeListingStatus, notify } = useDemo();
+  const [tab, setTab] = useState<ListingStatus | 'all'>('all');
+  const [confirming, setConfirming] = useState<{ id: string; action: SellerAction } | null>(null);
   const visible = drafts.filter((d) => tab === 'all' || d.status === tab);
+  const target = drafts.find((d) => d.id === confirming?.id);
+
+  const run = (id: string, action: SellerAction) => {
+    if (!changeListingStatus(id, action)) return;
+    // These statuses live only in this browser; say so rather than imply the shop was told.
+    notify(
+      action === 'submit' || action === 'resubmit'
+        ? 'Marked as submitted on this device only. Nothing was sent to the shop yet.'
+        : `${actionLabels[action]} applied on this device only.`,
+    );
+  };
+
   return (
     <>
       <PageHeading
         title="My listings"
-        description="Your drafts, their details and what comes next."
+        description="Your ads, where each one stands and what you can do next."
         action={<ButtonLink href="/sell">New listing</ButtonLink>}
       />
+      <Notice>
+        Statuses here are saved in this browser only. Going live needs shop review, which is not
+        connected yet.
+      </Notice>
       <div className="tabs" role="tablist" aria-label="Listing status">
-        {['all', 'draft', 'pending_review', 'published', 'sold'].map((t) => (
-          <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
-            {t.replace('_', ' ')}
-            {t === 'all' && ` (${drafts.length})`}
-          </button>
-        ))}
+        {listingTabs.map((t) => {
+          const count = t === 'all' ? drafts.length : drafts.filter((d) => d.status === t).length;
+          return (
+            <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
+              {t === 'all' ? 'All' : statusLabels[t]} ({count})
+            </button>
+          );
+        })}
       </div>
       {visible.length ? (
         <div className="panel">
-          {visible.map((d) => (
-            <div className="list-row" key={d.id}>
-              <div>
-                <span className="status-label">{d.status}</span>
-                <h3>{d.model || 'Untitled phone'}</h3>
-                <p>
-                  {formatPrice(Number(d.price) || 0)} · {d.city}
-                </p>
+          {visible.map((d) => {
+            const actions = sellerActions(d.status);
+            return (
+              <div className="list-row" key={d.id}>
+                <div>
+                  <span className={`status-label status-label--${d.status}`}>
+                    {statusLabels[d.status]}
+                  </span>
+                  <h3>{d.model || 'Untitled phone'}</h3>
+                  <p>
+                    {formatPrice(Number(d.price) || 0)} · {d.city}
+                  </p>
+                  <p className="tiny-text">{statusHelp[d.status]}</p>
+                  {d.status !== 'sold' && d.status !== 'withdrawn' && (
+                    <p className="tiny-text">
+                      Shop verification is optional.{' '}
+                      <Link href="/account/inspections/book">Get a Shop inspected badge</Link> to
+                      help buyers trust your ad.
+                    </p>
+                  )}
+                </div>
+                <div className="row-actions">
+                  {isEditable(d.status) && (
+                    <ButtonLink href={`/account/listings/${d.id}/edit`} variant="secondary">
+                      Edit
+                    </ButtonLink>
+                  )}
+                  {actions.map((action) => (
+                    <Button
+                      key={action}
+                      variant={
+                        action === 'submit' || action === 'resubmit' ? 'primary' : 'secondary'
+                      }
+                      onClick={() =>
+                        needsConfirmation.includes(action)
+                          ? setConfirming({ id: d.id, action })
+                          : run(d.id, action)
+                      }
+                    >
+                      {action === 'withdraw' && d.status === 'pending_review'
+                        ? 'Withdraw to edit'
+                        : actionLabels[action]}
+                    </Button>
+                  ))}
+                  {d.status === 'draft' && (
+                    <Button
+                      variant="ghost"
+                      aria-label={`Delete ${d.model || 'draft'}`}
+                      onClick={() => {
+                        if (window.confirm('Delete this local draft?')) {
+                          removeDraft(d.id);
+                          notify('Local draft removed.');
+                        }
+                      }}
+                    >
+                      <Trash2 size={17} />
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="row-actions">
-                <ButtonLink href={`/account/listings/${d.id}/edit`} variant="secondary">
-                  Edit draft
-                </ButtonLink>
-                <Button
-                  variant="ghost"
-                  aria-label={`Delete ${d.model || 'draft'}`}
-                  onClick={() => {
-                    if (window.confirm('Delete this local draft?')) {
-                      removeDraft(d.id);
-                      notify('Local draft removed.');
-                    }
-                  }}
-                >
-                  <Trash2 size={17} />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <EmptyState
           title="Nothing here yet"
-          description="Create a local draft to start putting your listing together."
+          description="Create a listing to start putting your ad together."
           action={<ButtonLink href="/sell">Create listing</ButtonLink>}
         />
       )}
+      <Dialog
+        open={Boolean(confirming)}
+        onClose={() => setConfirming(null)}
+        title={confirming ? `${actionLabels[confirming.action]}?` : ''}
+      >
+        <p>
+          {confirming?.action === 'mark_sold'
+            ? `“${target?.model}” will stop appearing to buyers. Sold ads cannot be reopened.`
+            : `“${target?.model}” will be hidden from buyers. You can reopen it later as a draft.`}
+        </p>
+        <div className="form-actions">
+          <Button variant="secondary" onClick={() => setConfirming(null)}>
+            Keep it
+          </Button>
+          <span />
+          <Button
+            onClick={() => {
+              if (confirming) run(confirming.id, confirming.action);
+              setConfirming(null);
+            }}
+          >
+            {confirming ? actionLabels[confirming.action] : ''}
+          </Button>
+        </div>
+      </Dialog>
     </>
   );
 }

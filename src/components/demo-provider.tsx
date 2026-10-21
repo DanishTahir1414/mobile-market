@@ -1,6 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { ListingDraft, Appointment, ToastMessage } from '@/lib/types';
+import { nextStatus, type SellerAction } from '@/lib/listing-lifecycle';
 import {
   getDemoSnapshot,
   getServerDemoSnapshot,
@@ -13,6 +14,8 @@ interface DemoContext extends DemoState {
   toggleFavorite: (id: string) => void;
   saveDraft: (draft: ListingDraft) => void;
   removeDraft: (id: string) => void;
+  /** Applies a seller action on this device only; returns false if the action is not allowed. */
+  changeListingStatus: (id: string, action: SellerAction) => boolean;
   book: (appointment: Appointment) => boolean;
   cancelBooking: (id: string) => void;
   notify: (message: string) => void;
@@ -47,6 +50,19 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         ...s,
         drafts: s.drafts.filter((d) => d.id !== id),
       })),
+    changeListingStatus: (id, action) => {
+      let changed = false;
+      updateDemo((s) => ({
+        ...s,
+        drafts: s.drafts.map((d) => {
+          const status = d.id === id ? nextStatus(d.status, action) : null;
+          if (!status) return d;
+          changed = true;
+          return { ...d, status, updatedAt: new Date().toISOString() };
+        }),
+      }));
+      return changed;
+    },
     book: (appointment) => {
       let booked = false;
       updateDemo((s) => {

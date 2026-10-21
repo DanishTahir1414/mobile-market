@@ -3373,3 +3373,178 @@ th {
     font-size: 8px;
   }
 }
+
+/* ---- Scroll speed -------------------------------------------------------
+   The browser skips layout and paint for sections that are far off screen.
+   The size hints stop the scrollbar jumping when they are rendered later. */
+.brands-section,
+.recent-section,
+.inspection-feature,
+.sell-banner,
+.site-footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 520px;
+}
+.listing-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
+
+/* ---- Listing gallery ---------------------------------------------------- */
+.gallery__track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.gallery__track::-webkit-scrollbar {
+  display: none;
+}
+.gallery__track:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -4px;
+}
+.gallery__slide {
+  position: relative;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+}
+.gallery__slide img {
+  object-fit: cover;
+}
+.gallery__nav,
+.gallery__zoom {
+  position: absolute;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  background: #ffffffe6;
+  border: 1px solid #e1e1d4;
+}
+.gallery__nav {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.gallery__nav--prev {
+  left: 12px;
+}
+.gallery__nav--next {
+  right: 12px;
+}
+.gallery__nav:disabled {
+  opacity: 0.35;
+}
+.gallery__zoom {
+  top: 15px;
+  right: 62px;
+}
+.gallery__count {
+  position: absolute;
+  z-index: 2;
+  right: 15px;
+  bottom: 15px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: #ffffffed;
+}
+.gallery__thumbs {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+}
+.gallery__thumbs button {
+  position: relative;
+  display: block;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e1e1d4;
+  border-radius: 7px;
+  background: #f4f4ed;
+  cursor: pointer;
+}
+.gallery__thumbs button[aria-current='true'] {
+  border-color: var(--text);
+  outline: 1px solid var(--text);
+}
+.gallery__thumbs img {
+  object-fit: cover;
+}
+.gallery__large {
+  position: relative;
+  width: min(86vw, 720px);
+  aspect-ratio: 1;
+  background: #f4f4ed;
+}
+.gallery__large img {
+  object-fit: contain;
+}
+
+/* ---- Staff site pictures and shop photo ------------------------------- */
+.media-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  align-items: start;
+}
+.media-slot__frame {
+  position: relative;
+  overflow: hidden;
+  max-height: 340px;
+  margin: 12px auto;
+  border-radius: 8px;
+  background: #f4f4ed;
+}
+.media-slot__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.media-slot__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #777762;
+}
+.media-slot__problems {
+  margin: 8px 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+.shop-photo {
+  position: relative;
+  min-height: 430px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: #efefe8;
+}
+.shop-photo img {
+  object-fit: cover;
+}
+
+/* ---- Listing status labels --------------------------------------------- */
+.status-label--published {
+  background: #111;
+  color: #fff;
+}
+.status-label--rejected {
+  border: 1px solid #111;
+}
+.status-label--sold,
+.status-label--withdrawn {
+  opacity: 0.6;
+}

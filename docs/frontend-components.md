@@ -14,6 +14,7 @@
 | `InspectionBadge`                      | Explicit inspection-state labels                   | Determining authoritative eligibility     |
 | `ListingGallery`                       | Swipeable, lazy-loaded listing photos and zoom     | Seller upload or moderation decisions     |
 | `site-media.ts`, `SiteMediaManager`    | Staff-owned site picture slots and file checks     | Deciding who may publish a picture        |
+| `listing-lifecycle.ts`                 | Which seller actions each status allows            | Staff approval, verification, publishing  |
 | `FavoriteButton`                       | Local demo favorite interaction                    | Authentication tokens                     |
 | `DemoProvider`, `demo-store`           | Non-sensitive local state and feedback             | Real account, payment or report authority |
 | `marketplace.ts`, `validation.ts`      | Pure filter/validation rules                       | UI markup or remote side effects          |

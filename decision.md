@@ -95,3 +95,13 @@ The frontend validates file type, size, dimensions and shape and refuses unsafe 
 The site favors fast scrolling on low-end phones, so no 3D, smooth-scroll or animation library was added. Gallery swiping uses native CSS scroll-snap, only the first photo loads eagerly, and below-the-fold sections use `content-visibility: auto` so the browser skips off-screen layout and paint. The 3D starter kit was reviewed; its accessibility, reduced-motion and phone-testing rules were kept, its WebGL techniques were not.
 
 **Tradeoff:** The homepage is less cinematic. Measure real devices before adding any motion.
+
+## 13. Seller lifecycle, and verification kept separate
+
+Sellers move an ad through draft, waiting for review, live, needs changes, sold and withdrawn using the pure rules in `lib/listing-lifecycle.ts`. Sellers can submit, resubmit, withdraw, mark sold and reopen; they can never publish or approve. Approval and rejection are staff decisions the server must make. Live ads are not edited in place; withdrawing first keeps half-finished changes away from buyers.
+
+Shop verification is a separate, optional choice. The shop only verifies the device; the seller decides whether to ask for it, and a Shop inspected badge never changes a listing's status or blocks selling. The account page offers it as a link, not a requirement.
+
+Statuses are stored in this browser only. Every message says nothing was sent to the shop, so submitting does not pretend a review is happening. Only draft and waiting-for-review can occur locally; live, needs changes, sold and withdrawn come from the future backend, and the screens already handle them.
+
+**Tradeoff:** "Rejected" shows no reason yet. Add the reviewer note when the Marketplace service exists.

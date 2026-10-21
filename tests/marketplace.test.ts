@@ -127,3 +127,29 @@ test('listing photos put the cover first, drop duplicates and cap at eight', () 
   const many = Array.from({ length: 12 }, (_, i) => `p${i}`);
   assert.equal(listingPhotos({ ...base, image: 'cover', gallery: many }).length, 8);
 });
+
+import { isEditable, nextStatus, sellerActions, statusLabels } from '../src/lib/listing-lifecycle';
+import type { ListingStatus } from '../src/lib/types';
+
+test('sellers follow the listing lifecycle one step at a time', () => {
+  assert.equal(nextStatus('draft', 'submit'), 'pending_review');
+  assert.equal(nextStatus('pending_review', 'withdraw'), 'draft');
+  assert.equal(nextStatus('published', 'mark_sold'), 'sold');
+  assert.equal(nextStatus('published', 'withdraw'), 'withdrawn');
+  assert.equal(nextStatus('rejected', 'resubmit'), 'pending_review');
+  assert.equal(nextStatus('withdrawn', 'reopen'), 'draft');
+});
+
+test('sellers cannot publish, approve or revive a sold ad themselves', () => {
+  assert.equal(nextStatus('draft', 'mark_sold'), null);
+  assert.equal(nextStatus('pending_review', 'mark_sold'), null);
+  assert.deepEqual(sellerActions('sold'), []);
+  for (const status of Object.keys(statusLabels) as ListingStatus[])
+    for (const action of sellerActions(status))
+      assert.notEqual(nextStatus(status, action), 'published');
+});
+
+test('only draft and needs-changes ads can be edited', () => {
+  const editable = (Object.keys(statusLabels) as ListingStatus[]).filter(isEditable);
+  assert.deepEqual(editable.sort(), ['draft', 'rejected']);
+});

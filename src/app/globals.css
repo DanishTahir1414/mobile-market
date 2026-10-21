@@ -3535,3 +3535,16 @@ th {
 .shop-photo img {
   object-fit: cover;
 }
+
+/* ---- Listing status labels --------------------------------------------- */
+.status-label--published {
+  background: #111;
+  color: #fff;
+}
+.status-label--rejected {
+  border: 1px solid #111;
+}
+.status-label--sold,
+.status-label--withdrawn {
+  opacity: 0.6;
+}

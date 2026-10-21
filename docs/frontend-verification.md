@@ -29,6 +29,10 @@ The initial `tsx --test` launcher could not create its IPC socket in this enviro
 
 `typecheck`, `lint`, `format:check`, 14 tests and `build` passed. A production server returned 200 for `/`, `/shop`, `/staff/media` and listing detail pages, and the HTML contained the managed hero, the staff notice and the three-photo gallery controls. No browser was available, so swipe, zoom, layout and real scroll speed are unverified.
 
+## Update 22 October 2026 (seller lifecycle)
+
+`typecheck`, `lint`, 17 tests and `build` passed. Lifecycle rules are unit-tested, including that sellers can never publish. HTTP checks confirmed the listings page renders every status tab. Clicking through submit, withdraw, mark sold and reopen was not done: no browser was available.
+
 ## Verification limits
 
 The supported browser-control skill was unavailable in the managed environment. No desktop/mobile screenshot review, interactive end-to-end flow, keyboard walkthrough, screen-reader test or automated overflow measurement was performed. Responsive CSS and semantic controls are implemented, but visual/accessibility acceptance remains unverified.

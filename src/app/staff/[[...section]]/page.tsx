@@ -15,6 +15,8 @@ import {
   AbuseQueue,
   AuditHistory,
 } from '@/features/staff/staff-pages';
+import { SiteMediaManager } from '@/features/staff/site-media-page';
+import { getSiteMedia } from '@/lib/site-media';
 const authModes: Record<string, AuthMode> = {
   activate: 'activate',
   'mfa/setup': 'mfa-setup',
@@ -41,6 +43,7 @@ export default async function Page({ params }: { params: Promise<{ section?: str
   let content;
   if (segments[0] === 'moderation' && segments[1]) content = <ModerationDetail id={segments[1]} />;
   else if (segments[0] === 'inspections' && segments[1]) content = <InspectionBench />;
+  else if (key === 'media') content = <SiteMediaManager media={getSiteMedia()} />;
   else {
     const Component = pages[key as keyof typeof pages];
     if (!Component) notFound();

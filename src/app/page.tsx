@@ -14,7 +14,9 @@ import {
 import { ButtonLink } from '@/components/ui/button';
 import { ListingGrid } from '@/components/listings/listing-grid';
 import { demoListings } from '@/lib/demo-data';
+import { resolveSiteMedia } from '@/lib/site-media';
 export default function HomePage() {
+  const hero = resolveSiteMedia('home-hero');
   return (
     <>
       <section className="hero container">
@@ -54,14 +56,16 @@ export default function HomePage() {
           <div className="hero-art__label">
             <span className="tiny-dot" /> FIND YOUR NEXT UPGRADE
           </div>
-          <Image
-            src="/images/iphone-titanium.jpg"
-            alt="Illustrative phone with a titanium finish"
-            fill
-            priority
-            sizes="(max-width: 800px) 90vw, 45vw"
-            className="hero-phone"
-          />
+          {hero && (
+            <Image
+              src={hero.src}
+              alt={hero.alt}
+              fill
+              priority
+              sizes="(max-width: 800px) 90vw, 45vw"
+              className="hero-phone"
+            />
+          )}
           <div className="hero-inspection">
             <span className="hero-inspection__icon">
               <BadgeCheck size={25} />

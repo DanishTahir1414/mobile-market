@@ -25,6 +25,10 @@ The initial `tsx --test` launcher could not create its IPC socket in this enviro
 - Battery percentage bounds.
 - PKR formatting and Asia/Karachi time conversion.
 
+## Update 22 October 2026 (site pictures, gallery, scroll CSS)
+
+`typecheck`, `lint`, `format:check`, 14 tests and `build` passed. A production server returned 200 for `/`, `/shop`, `/staff/media` and listing detail pages, and the HTML contained the managed hero, the staff notice and the three-photo gallery controls. No browser was available, so swipe, zoom, layout and real scroll speed are unverified.
+
 ## Verification limits
 
 The supported browser-control skill was unavailable in the managed environment. No desktop/mobile screenshot review, interactive end-to-end flow, keyboard walkthrough, screen-reader test or automated overflow measurement was performed. Responsive CSS and semantic controls are implemented, but visual/accessibility acceptance remains unverified.

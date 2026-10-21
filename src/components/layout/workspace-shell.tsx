@@ -19,6 +19,7 @@ import {
   ClipboardList,
   BookOpen,
   ScrollText,
+  Images,
 } from 'lucide-react';
 const accountLinks = [
   { href: '/account', label: 'Overview', Icon: LayoutDashboard },
@@ -44,6 +45,7 @@ const staffLinks = [
   { href: '/staff/fees', label: 'Inspection fees', Icon: BookOpen },
   { href: '/staff/team', label: 'Staff & permissions', Icon: UsersRound },
   { href: '/staff/catalog', label: 'Phone catalog', Icon: Smartphone },
+  { href: '/staff/media', label: 'Site pictures', Icon: Images },
   { href: '/staff/settings', label: 'Shop settings', Icon: Settings },
   { href: '/staff/audit', label: 'Audit history', Icon: ScrollText },
 ];

@@ -27,6 +27,8 @@ export const demoListings: Listing[] = [
     battery: 94,
     inspection: 'current',
     image: '/images/iphone-titanium.jpg',
+    // Illustrative same-brand photos so the gallery can be exercised; not this device.
+    gallery: ['/images/iphone-dark.jpg', '/images/iphone-purple.jpg'],
   },
   {
     ...base,

@@ -14,7 +14,10 @@ export interface Listing {
   condition: 'Excellent' | 'Good' | 'Fair';
   pta: 'Approved' | 'Not approved' | 'Unknown';
   battery: number | null;
+  /** Cover photo used by cards. */
   image: string;
+  /** Extra seller photos shown after the cover in the detail gallery. */
+  gallery?: string[];
   inspection: InspectionState;
   listedAt: string;
   description: string;

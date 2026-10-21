@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowLeft, MapPin, Phone, MessageCircle, Flag, Share2, ShieldCheck } from 'lucide-react';
@@ -11,6 +10,8 @@ import { Select, Textarea } from '@/components/ui/field';
 import { Notice } from '@/components/ui/empty-state';
 import { InspectionBadge } from '@/components/listings/inspection-badge';
 import { FavoriteButton } from '@/components/listings/favorite-button';
+import { ListingGallery } from '@/components/listings/listing-gallery';
+import { listingPhotos } from '@/lib/marketplace';
 import { useDemo } from '@/components/demo-provider';
 export function ListingDetail({ listing }: { listing: Listing }) {
   const [dialog, setDialog] = useState<'contact' | 'report' | null>(null);
@@ -36,17 +37,10 @@ export function ListingDetail({ listing }: { listing: Listing }) {
       </div>
       <div className="detail-layout">
         <section>
-          <div className="detail-image">
-            <Image
-              src={listing.image}
-              alt={`Illustrative ${listing.model} photograph`}
-              fill
-              priority
-              sizes="(max-width: 850px) 90vw, 55vw"
-            />
+          <ListingGallery photos={listingPhotos(listing)} alt={listing.model}>
             <span className="photo-label">Illustrative photo · not an actual sale</span>
             <FavoriteButton id={listing.id} />
-          </div>
+          </ListingGallery>
           <div className="detail-section">
             <p className="eyebrow">FROM THE SELLER</p>
             <h2>A little about this phone</h2>

@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { resolveSiteMedia } from '@/lib/site-media';
 import { AuthForm, type AuthMode } from '@/features/auth/auth-form';
 import {
   ContactPage,
@@ -32,6 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ page: str
 export default async function Page({ params }: { params: Promise<{ page: string }> }) {
   const { page } = await params;
   if (auth[page]) return <AuthForm mode={auth[page]} />;
+  if (page === 'shop') return <ShopPage photo={resolveSiteMedia('shop-front')} />;
   if (info[page]) {
     const Component = info[page];
     return <Component />;

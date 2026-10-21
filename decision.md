@@ -81,3 +81,17 @@ Type checks, lint, domain-focused frontend tests and production build are execut
 The supported browser-control capability was unavailable in this environment. Browser screenshots, full route navigation, viewport overflow checks and end-to-end flows were therefore not claimed as passed. See the verification report for exact results.
 
 Official references: https://nextjs.org/docs/app/getting-started/installation, https://nextjs.org/docs/app/guides/upgrading/version-16, https://react.dev/reference/react/useSyncExternalStore.
+
+## 11. Staff-owned site pictures, separate from listing photos
+
+Shop-level pictures (homepage hero, shop photo) are defined as named slots in `lib/site-media.ts` and rendered through `resolveSiteMedia`. Pages never hard-code those images. Staff manage them on `/staff/media`; sellers and buyers can only add photos to their own listings, which use a different component and a moderation path.
+
+The frontend validates file type, size, dimensions and shape and refuses unsafe sources (`javascript:`, `data:`, protocol-relative URLs). It does not upload or publish: that needs the Media service, with server-side staff permission checks and WebP processing. Until then the slot defaults live in the repository.
+
+**Migration:** replace `getSiteMedia()` with a Media-service adapter that returns the same `SiteMediaMap`, and have the upload button call a staff-only endpoint. Optional slots with no picture show the existing placeholder rather than an invented image.
+
+## 12. Scroll speed over 3D effects
+
+The site favors fast scrolling on low-end phones, so no 3D, smooth-scroll or animation library was added. Gallery swiping uses native CSS scroll-snap, only the first photo loads eagerly, and below-the-fold sections use `content-visibility: auto` so the browser skips off-screen layout and paint. The 3D starter kit was reviewed; its accessibility, reduced-motion and phone-testing rules were kept, its WebGL techniques were not.
+
+**Tradeoff:** The homepage is less cinematic. Measure real devices before adding any motion.

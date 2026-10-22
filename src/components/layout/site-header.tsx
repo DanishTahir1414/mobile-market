@@ -1,10 +1,11 @@
 'use client';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { ArrowUpRight, Heart, Menu, Smartphone, X, UserRound, Plus } from 'lucide-react';
 import { Button, ButtonLink } from '@/components/ui/button';
-export function SiteHeader() {
+export function SiteHeader({ logo }: { logo?: { src: string; alt: string } | null }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const links = [
@@ -23,8 +24,12 @@ export function SiteHeader() {
       <header className="site-header">
         <div className="header-inner">
           <Link href="/" className="brand" aria-label="Mobile Market home">
-            <span className="brand__icon">
-              <Smartphone size={20} />
+            <span className={logo ? 'brand__logo' : 'brand__icon'}>
+              {logo ? (
+                <Image src={logo.src} alt={logo.alt} width={44} height={44} priority />
+              ) : (
+                <Smartphone size={20} />
+              )}
             </span>
             <span>
               mobile<span className="brand__light">market</span>

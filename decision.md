@@ -125,3 +125,15 @@ Blur is used only on small surfaces (header, floating cards, gallery controls, p
 Clicking or tapping a listing photo opens a full-screen viewer that shows only the photo, fitted without cropping, with arrows, keyboard, swipe, Escape and a close button. A mouse also gets a hover zoom on the photo. The earlier version put the photo in a generic dialog, which cropped it and added scroll bars.
 
 **Tradeoff:** The earlier design documents still describe the monochrome look; this decision takes precedence.
+
+## 16. Vendor logo, amber palette with no blue or purple, floating navbar, CSS preloader
+
+The shop's logo (Jugnu GSM) replaces the phone icon in the header, the browser tab icon and the loading screen. It is a staff-managed site picture slot (`brand-logo`), so staff can replace it later without a code change.
+
+The palette now comes from the logo: amber and golden yellow accents on a warm cream background, dark brown ink for text, and peach and mint pastels. Blue, purple and lavender shades are not used anywhere, and the website itself is light, not black. This replaces the violet accent from decision 15.
+
+The navbar floats: rounded, inset from the page edges, frosted glass, and sticky.
+
+The loading screen is pure CSS (logo, drifting fireflies for "jugnu", a thin progress bar) and fades out by itself after about a second, so it cannot hang and needs no JavaScript. It is decorative only (aria-hidden). The 3D starter kit's rule to wait for a scene does not apply because this site has no 3D scene. It shows on a full page load, not on in-app navigation.
+
+**Open:** the reference loading screen on the artivistaa site was not available to me, so the animation follows the logo and the kit's rules only.

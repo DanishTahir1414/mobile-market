@@ -56,3 +56,7 @@ The existing v2 specifications remain the baseline for that future implementatio
 ## Update 22 October 2026 (inspection timeline, catalog, staff queue)
 
 `typecheck`, `lint`, 22 tests and `build` (44 pages) passed. A production server returned 200 for browse with filters, moderation queue and detail, appointments, account inspections and a new listing page. Touch behavior of the filter sheet, the timeline layout and real device scroll speed are unverified: no browser was available.
+
+## Update 23 October 2026 (theme and photo viewer)
+
+`typecheck`, `lint`, 22 tests and `build` passed. Screenshots from a headless browser (no GPU) confirmed the full-screen viewer fits the photo on a 1280 px and a 390 px screen, and that the home, browse, listing and staff pages render with the new theme. Real-phone touch swipe, hover zoom feel and scroll speed are still unverified.

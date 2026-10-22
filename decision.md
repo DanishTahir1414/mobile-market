@@ -115,3 +115,13 @@ The sample catalog grew from 6 to 24 fictional phones so filters and pagination 
 Moderation flags (price far from same-model peers, unknown PTA, no iPhone battery, Fair condition with no defects) are prompts for a human, never decisions. Price is only compared when at least three same-model, same-storage ads exist. Approve stays disabled until the reviewer ticks three checks. Appointments are grouped by Karachi day, not by the viewer's time zone.
 
 **Correction:** the browse page already had a mobile filter sheet. It now adds active-filter chips, a count on the button, Escape to close, scroll lock and no history entry per typed digit.
+
+## 15. Pastel and glass look replaces the monochrome direction; full-screen photo viewer
+
+The owner asked for a more modern look with soft colour, so the earlier "monochrome, no gradients, no blue or purple" direction is superseded. The palette is a violet accent with mint, peach, sky and rose pastels over a soft background, and white glass surfaces. Phone photos still keep their original colours. Warm greys in the older CSS were retinted to cool lavender greys, and a theme layer at the end of `globals.css` holds the new tokens.
+
+Blur is used only on small surfaces (header, floating cards, gallery controls, photo viewer) because blur on every card slows scrolling on low-end phones. Reduced-transparency and reduced-motion settings fall back to solid, still surfaces.
+
+Clicking or tapping a listing photo opens a full-screen viewer that shows only the photo, fitted without cropping, with arrows, keyboard, swipe, Escape and a close button. A mouse also gets a hover zoom on the photo. The earlier version put the photo in a generic dialog, which cropped it and added scroll bars.
+
+**Tradeoff:** The earlier design documents still describe the monochrome look; this decision takes precedence.

@@ -1,14 +1,14 @@
 'use client';
 import Image from 'next/image';
 import { useCallback, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Expand } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog } from '@/components/ui/dialog';
+import { Lightbox } from './lightbox';
 
 /**
  * Native scroll-snap gives swipe on phones with no animation library, and only the first
- * slide loads eagerly so the page stays light. Position is read on scroll (one frame at a
- * time) rather than stored per pixel.
+ * slide loads eagerly so the page stays light. Clicking or tapping a photo opens it full
+ * screen; a mouse also gets a hover zoom. Position is read once per frame while scrolling.
  */
 export function ListingGallery({
   photos,
@@ -22,7 +22,7 @@ export function ListingGallery({
   const track = useRef<HTMLDivElement>(null);
   const frame = useRef(0);
   const [index, setIndex] = useState(0);
-  const [zoom, setZoom] = useState(false);
+  const [open, setOpen] = useState<number | null>(null);
   const many = photos.length > 1;
 
   const goTo = useCallback((next: number) => {
@@ -45,16 +45,24 @@ export function ListingGallery({
           ref={track}
           className="gallery__track"
           onScroll={onScroll}
-          tabIndex={0}
           role="group"
           aria-roledescription="carousel"
           aria-label={`${alt} photos`}
         >
           {photos.map((src, i) => (
-            <div
+            <button
+              type="button"
               className="gallery__slide"
               key={src}
-              aria-label={`Photo ${i + 1} of ${photos.length}`}
+              aria-label={`View photo ${i + 1} of ${photos.length} full screen`}
+              onClick={() => setOpen(i)}
+              onPointerMove={(e) => {
+                if (e.pointerType !== 'mouse') return;
+                const box = e.currentTarget.getBoundingClientRect();
+                const img = e.currentTarget.querySelector('img');
+                if (img)
+                  img.style.transformOrigin = `${((e.clientX - box.left) / box.width) * 100}% ${((e.clientY - box.top) / box.height) * 100}%`;
+              }}
             >
               <Image
                 src={src}
@@ -64,18 +72,13 @@ export function ListingGallery({
                 loading={i === 0 ? undefined : 'lazy'}
                 sizes="(max-width: 850px) 90vw, 55vw"
               />
-            </div>
+            </button>
           ))}
         </div>
         {children}
-        <Button
-          variant="ghost"
-          className="gallery__zoom"
-          aria-label="View photo larger"
-          onClick={() => setZoom(true)}
-        >
-          <Maximize2 size={16} />
-        </Button>
+        <span className="gallery__zoom" aria-hidden="true">
+          <Expand size={14} /> Tap to enlarge
+        </span>
         {many && (
           <>
             <Button
@@ -118,18 +121,18 @@ export function ListingGallery({
           ))}
         </ul>
       )}
-      <Dialog open={zoom} onClose={() => setZoom(false)} title={`${alt} · photo ${index + 1}`}>
-        {zoom && (
-          <div className="gallery__large">
-            <Image
-              src={photos[index]}
-              alt={`Illustrative ${alt} photograph ${index + 1}`}
-              fill
-              sizes="90vw"
-            />
-          </div>
-        )}
-      </Dialog>
+      {open !== null && (
+        <Lightbox
+          photos={photos}
+          index={open}
+          alt={alt}
+          onIndex={(n) => {
+            setOpen(n);
+            goTo(n);
+          }}
+          onClose={() => setOpen(null)}
+        />
+      )}
     </div>
   );
 }

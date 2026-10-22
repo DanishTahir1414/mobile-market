@@ -216,3 +216,9 @@ test('the larger sample catalog has unique ids and valid photos', () => {
   assert.ok(demoListings.length >= 24);
   assert.ok(demoListings.every((l) => l.image.startsWith('/images/')));
 });
+
+test('the shop logo is a required, staff-managed slot with a safe default', () => {
+  const slot = siteMediaSlots.find((s) => s.key === 'brand-logo');
+  assert.ok(slot?.required);
+  assert.equal(resolveSiteMedia('brand-logo')?.src, '/images/logo-jugnu.webp');
+});

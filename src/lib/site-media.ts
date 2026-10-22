@@ -9,7 +9,7 @@ import { z } from 'zod';
  * checked-in defaults below. The browser can never be trusted to decide who may change a
  * slot; the future Media service must enforce that on the server.
  */
-export type SiteMediaSlotKey = 'home-hero' | 'shop-front';
+export type SiteMediaSlotKey = 'brand-logo' | 'home-hero' | 'shop-front';
 
 export interface SiteMediaSlot {
   key: SiteMediaSlotKey;
@@ -32,6 +32,15 @@ export interface SiteMediaAsset {
 export type SiteMediaMap = Partial<Record<SiteMediaSlotKey, SiteMediaAsset>>;
 
 export const siteMediaSlots: SiteMediaSlot[] = [
+  {
+    key: 'brand-logo',
+    label: 'Shop logo',
+    where: 'Header, loading screen and browser tab',
+    aspect: 1,
+    minWidth: 400,
+    minHeight: 400,
+    required: true,
+  },
   {
     key: 'home-hero',
     label: 'Homepage hero photo',
@@ -59,6 +68,11 @@ export const siteImageRules = {
 
 /** Defaults shipped with the frontend. A Media-service adapter replaces this later. */
 export const defaultSiteMedia: SiteMediaMap = {
+  'brand-logo': {
+    src: '/images/logo-jugnu.webp',
+    alt: 'Jugnu GSM logo',
+    updatedAt: '2026-10-23T00:00:00Z',
+  },
   'home-hero': {
     src: '/images/iphone-titanium.jpg',
     alt: 'Illustrative phone with a titanium finish',

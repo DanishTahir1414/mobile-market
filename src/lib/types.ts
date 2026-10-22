@@ -50,6 +50,8 @@ export interface ListingDraft {
 }
 export interface Appointment {
   id: string;
+  /** Set by staff on the server; local demo bookings are always at the first stage. */
+  stage?: import('./inspection-timeline').InspectionStage;
   listingName: string;
   startsAt: string;
   status: 'booked' | 'cancelled';

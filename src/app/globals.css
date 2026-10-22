@@ -3548,3 +3548,84 @@ th {
 .status-label--withdrawn {
   opacity: 0.6;
 }
+
+/* ---- Inspection timeline ----------------------------------------------- */
+.timeline {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.timeline__step {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 13px;
+}
+.timeline__step strong {
+  font-weight: 500;
+}
+.timeline__dot {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #b9b9a5;
+  border-radius: 50%;
+}
+.timeline__step--done .timeline__dot {
+  background: #111;
+  border-color: #111;
+  color: #fff;
+}
+.timeline__step--current .timeline__dot {
+  border-color: #111;
+  box-shadow:
+    inset 0 0 0 4px #fff,
+    inset 0 0 0 9px #111;
+}
+.timeline__step--upcoming {
+  color: #8c8c78;
+}
+.timeline__help {
+  grid-column: 2;
+  font-size: 12px;
+  color: #666655;
+}
+
+/* ---- Staff queue, filter chips ------------------------------------------ */
+.day-heading {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+.check-group {
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+}
+.check-group legend {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+.filter-chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border: 1px solid #d4d4c4;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}

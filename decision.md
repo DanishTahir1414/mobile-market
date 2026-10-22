@@ -105,3 +105,13 @@ Shop verification is a separate, optional choice. The shop only verifies the dev
 Statuses are stored in this browser only. Every message says nothing was sent to the shop, so submitting does not pretend a review is happening. Only draft and waiting-for-review can occur locally; live, needs changes, sold and withdrawn come from the future backend, and the screens already handle them.
 
 **Tradeoff:** "Rejected" shows no reason yet. Add the reviewer note when the Marketplace service exists.
+
+## 14. Optional inspection progress, larger sample catalog, staff queue prompts
+
+Sellers see inspection progress as five read-only stages: booked, arrived, being inspected, report under review, badge awarded. Only staff move a stage, and the server must enforce that; the local demo is always at "booked". A cancelled visit shows no timeline.
+
+The sample catalog grew from 6 to 24 fictional phones so filters and pagination can be exercised. Only Apple, Samsung and Google are generated because only those have local illustrative photos; photos are shared across listings and labelled illustrative. The first six hand-built phones are kept as a fixed fixture for the original filter tests.
+
+Moderation flags (price far from same-model peers, unknown PTA, no iPhone battery, Fair condition with no defects) are prompts for a human, never decisions. Price is only compared when at least three same-model, same-storage ads exist. Approve stays disabled until the reviewer ticks three checks. Appointments are grouped by Karachi day, not by the viewer's time zone.
+
+**Correction:** the browse page already had a mobile filter sheet. It now adds active-filter chips, a count on the button, Escape to close, scroll lock and no history entry per typed digit.

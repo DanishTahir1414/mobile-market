@@ -1,10 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal, X, ArrowLeft, ArrowRight } from 'lucide-react';
 import { catalog, cities } from '@/lib/catalog';
 import { demoListings } from '@/lib/demo-data';
-import { filterListings, type Filters } from '@/lib/marketplace';
+import { activeFilters, filterListings, type Filters } from '@/lib/marketplace';
 import { ListingGrid } from '@/components/listings/listing-grid';
 import { Button } from '@/components/ui/button';
 import { Input, Select } from '@/components/ui/field';
@@ -17,13 +17,27 @@ export function Browse() {
   const results = filterListings(demoListings, filters);
   const page = Math.max(1, Number(params.get('page')) || 1),
     pageSize = 6;
-  const update = (key: string, value: string) => {
+  const chips = activeFilters(filters);
+  // Typing in a number box would otherwise add a history entry per digit.
+  const update = (key: string, value: string, typing = false) => {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
     else next.delete(key);
     next.delete('page');
-    router.push(`/mobiles?${next}`);
+    (typing ? router.replace : router.push)(`/mobiles?${next}`);
   };
+  // The phone filter sheet covers the page: Escape closes it and the page behind stays still.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMobileOpen(false);
+    document.addEventListener('keydown', onKey);
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previous;
+    };
+  }, [mobileOpen]);
   return (
     <div className="container page-space">
       <PageHeading
@@ -49,7 +63,7 @@ export function Browse() {
           <Button variant="secondary">Search</Button>
         </form>
         <Button variant="secondary" className="filter-toggle" onClick={() => setMobileOpen(true)}>
-          <SlidersHorizontal size={17} /> Filters
+          <SlidersHorizontal size={17} /> Filters{chips.length > 0 && ` (${chips.length})`}
         </Button>
         <select
           aria-label="Sort phones"
@@ -105,14 +119,14 @@ export function Browse() {
               type="number"
               min="0"
               value={filters.min || ''}
-              onChange={(e) => update('min', e.target.value)}
+              onChange={(e) => update('min', e.target.value, true)}
             />
             <Input
               label="Max price (PKR)"
               type="number"
               min="0"
               value={filters.max || ''}
-              onChange={(e) => update('max', e.target.value)}
+              onChange={(e) => update('max', e.target.value, true)}
             />
           </div>
           <Select
@@ -167,6 +181,18 @@ export function Browse() {
             </span>
             <span>Fictional inventory · No real sellers</span>
           </div>
+          {chips.length > 0 && (
+            <ul className="filter-chips" aria-label="Active filters">
+              {chips.map((c) => (
+                <li key={c.key}>
+                  <button type="button" onClick={() => update(c.key, '')}>
+                    {c.label}
+                    <X size={13} aria-label="Remove filter" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
           <ListingGrid listings={results.slice((page - 1) * pageSize, page * pageSize)} />
           {results.length > pageSize && (
             <div className="pagination">

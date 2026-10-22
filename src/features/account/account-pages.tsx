@@ -9,6 +9,7 @@ import { Input, Select } from '@/components/ui/field';
 import { PageHeading } from '@/components/ui/page-heading';
 import { ListingGrid } from '@/components/listings/listing-grid';
 import { Dialog } from '@/components/ui/dialog';
+import { InspectionTimeline } from '@/components/listings/inspection-timeline';
 import { demoListings } from '@/lib/demo-data';
 import {
   actionLabels,
@@ -276,7 +277,10 @@ export function Inspections() {
         description="A clearer view of your device, one visit at a time."
         action={<ButtonLink href="/account/inspections/book">Choose a demo slot</ButtonLink>}
       />
-      <Notice>Demo bookings are stored locally and do not reserve a real shop appointment.</Notice>
+      <Notice>
+        Inspection is optional: the shop only checks your phone, and you decide whether to get the
+        badge. Demo bookings are stored locally and reserve no real appointment.
+      </Notice>
       {appointments.length ? (
         <div className="panel">
           {appointments.map((a) => (
@@ -285,6 +289,7 @@ export function Inspections() {
                 <span className="status-label">{a.status} · local demo</span>
                 <h3>{a.listingName}</h3>
                 <p>{formatShopDate(a.startsAt)}</p>
+                {a.status === 'booked' && <InspectionTimeline stage={a.stage ?? 'booked'} />}
               </div>
               {a.status === 'booked' && (
                 <Button

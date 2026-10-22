@@ -10,6 +10,9 @@ import { Notice, EmptyState } from '@/components/ui/empty-state';
 import { Input, Select, Textarea } from '@/components/ui/field';
 import { useDemo } from '@/components/demo-provider';
 import { formatPrice } from '@/lib/format';
+import { groupByShopDay } from '@/lib/appointments';
+import { inspectionStages } from '@/lib/inspection-timeline';
+import { reviewFlags } from '@/lib/moderation';
 export function StaffOverview() {
   return (
     <>
@@ -68,6 +71,19 @@ export function StaffOverview() {
   );
 }
 export function Moderation() {
+  const [query, setQuery] = useState('');
+  const [flaggedOnly, setFlaggedOnly] = useState(false);
+  // Oldest first, so nothing waits forever.
+  const queue = [...demoListings]
+    .sort((a, b) => a.listedAt.localeCompare(b.listedAt))
+    .map((l) => ({ listing: l, flags: reviewFlags(l, demoListings) }))
+    .filter(
+      ({ listing, flags }) =>
+        `${listing.brand} ${listing.model} ${listing.city}`
+          .toLowerCase()
+          .includes(query.trim().toLowerCase()) &&
+        (!flaggedOnly || flags.length > 0),
+    );
   return (
     <>
       <PageHeading
@@ -75,23 +91,49 @@ export function Moderation() {
         description="A careful review before a listing reaches the marketplace."
       />
       <Notice>
-        Sample queue. Decisions are unavailable until backend authorization is connected.
+        Sample queue. Flags are prompts for a human reviewer, not decisions. Decisions are
+        unavailable until backend authorization is connected.
       </Notice>
+      <div className="browse-toolbar">
+        <Input
+          label="Search the queue"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Model, brand or city"
+        />
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={flaggedOnly}
+            onChange={(e) => setFlaggedOnly(e.target.checked)}
+          />
+          Only ads with flags
+        </label>
+      </div>
+      <p className="muted">
+        {queue.length} of {demoListings.length} sample ads, oldest first
+      </p>
       <div className="panel">
-        {demoListings.slice(0, 3).map((l) => (
+        {queue.slice(0, 12).map(({ listing: l, flags }) => (
           <div className="list-row" key={l.id}>
             <div>
               <span className="status-label">Sample · awaiting review</span>
               <h3>{l.model}</h3>
               <p>
-                {formatPrice(l.price)} · {l.city}
+                {formatPrice(l.price)} · {l.city} · {l.storage} GB
               </p>
+              {flags.length > 0 && (
+                <p className="tiny-text">
+                  {flags.length} {flags.length === 1 ? 'flag' : 'flags'}: {flags[0]}
+                </p>
+              )}
             </div>
             <ButtonLink variant="secondary" href={`/staff/moderation/${l.id}`}>
               Review details
             </ButtonLink>
           </div>
         ))}
+        {queue.length === 0 && <p>No sample ads match.</p>}
       </div>
     </>
   );
@@ -99,10 +141,19 @@ export function Moderation() {
 export function ModerationDetail({ id }: { id: string }) {
   const l = demoListings.find((x) => x.id === id);
   const { notify } = useDemo();
+  const [checked, setChecked] = useState<string[]>([]);
+  const [decision, setDecision] = useState('');
   if (!l)
     return (
       <EmptyState title="Sample listing not found" description="Go back to the review queue." />
     );
+  const flags = reviewFlags(l, demoListings);
+  const checks = [
+    'Photos are clear and show the real phone',
+    'Price and details look believable',
+    'No phone number or link is hidden in the text',
+  ];
+  const allChecked = checked.length === checks.length;
   return (
     <>
       <PageHeading
@@ -110,6 +161,16 @@ export function ModerationDetail({ id }: { id: string }) {
         description="Keep seller declarations separate from shop inspection observations."
       />
       <Notice>This is a read-only review of a fictional listing.</Notice>
+      {flags.length > 0 && (
+        <div className="panel" role="note" aria-label="Review flags">
+          <h2>Look closely at</h2>
+          <ul>
+            {flags.map((f) => (
+              <li key={f}>{f}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="panel">
         <dl className="spec-grid">
           {[
@@ -132,14 +193,39 @@ export function ModerationDetail({ id }: { id: string }) {
             notify('Decision preview only. The listing was not changed.');
           }}
         >
-          <Select label="Decision" required>
+          <fieldset className="check-group">
+            <legend>Before approving, confirm</legend>
+            {checks.map((c) => (
+              <label className="checkbox-label" key={c}>
+                <input
+                  type="checkbox"
+                  checked={checked.includes(c)}
+                  onChange={(e) =>
+                    setChecked((cur) =>
+                      e.target.checked ? [...cur, c] : cur.filter((x) => x !== c),
+                    )
+                  }
+                />
+                {c}
+              </label>
+            ))}
+          </fieldset>
+          <Select
+            label="Decision"
+            required
+            value={decision}
+            onChange={(e) => setDecision(e.target.value)}
+            hint={
+              decision === 'Approve' && !allChecked ? 'Tick every check to approve.' : undefined
+            }
+          >
             <option value="">Choose decision</option>
             <option>Approve</option>
             <option>Reject</option>
             <option>Request changes</option>
           </Select>
-          <Textarea label="Review reason" required minLength={5} />
-          <Button>Preview decision</Button>
+          <Textarea label="Review reason (shown to the seller)" required minLength={5} />
+          <Button disabled={decision === 'Approve' && !allChecked}>Preview decision</Button>
         </form>
       </div>
     </>
@@ -147,38 +233,57 @@ export function ModerationDetail({ id }: { id: string }) {
 }
 export function AppointmentCalendar() {
   const { appointments } = useDemo();
+  const [filter, setFilter] = useState<'all' | 'booked' | 'cancelled'>('all');
+  const shown = appointments.filter((a) => filter === 'all' || a.status === filter);
+  const days = groupByShopDay(shown);
   return (
     <>
       <PageHeading
         title="Shop appointments"
-        description="Physical visits, assigned inspectors and attendance."
+        description="Physical visits by day, in shop time (Asia/Karachi)."
       />
       <Notice>
-        Only locally created demo appointments appear here. Assignment and no-show recording need
-        the backend.
+        Only locally created demo appointments appear here. Assignment, check-in and no-show
+        recording need the backend.
       </Notice>
-      {appointments.length ? (
-        <div className="panel">
-          {appointments.map((a) => (
-            <div className="list-row" key={a.id}>
-              <div>
-                <h3>{a.listingName}</h3>
-                <p>
-                  {new Date(a.startsAt).toLocaleString('en-PK', {
-                    timeZone: 'Asia/Karachi',
-                  })}{' '}
-                  · {a.status}
-                </p>
+      <div className="tabs" role="tablist" aria-label="Appointment status">
+        {(['all', 'booked', 'cancelled'] as const).map((t) => (
+          <button key={t} role="tab" aria-selected={filter === t} onClick={() => setFilter(t)}>
+            {t === 'all' ? 'All' : t[0].toUpperCase() + t.slice(1)} (
+            {t === 'all' ? appointments.length : appointments.filter((a) => a.status === t).length})
+          </button>
+        ))}
+      </div>
+      {days.length ? (
+        days.map((day) => (
+          <section className="panel" key={day.key} aria-label={day.label}>
+            <h2 className="day-heading">{day.label}</h2>
+            {day.items.map((a) => (
+              <div className="list-row" key={a.id}>
+                <div>
+                  <span className="status-label">{a.status}</span>
+                  <h3>{a.listingName}</h3>
+                  <p>
+                    {new Intl.DateTimeFormat('en-PK', {
+                      timeZone: 'Asia/Karachi',
+                      timeStyle: 'short',
+                    }).format(new Date(a.startsAt))}
+                    {a.status === 'booked' &&
+                      ` · ${inspectionStages.find((s) => s.key === (a.stage ?? 'booked'))?.label}`}
+                  </p>
+                </div>
+                {a.status === 'booked' && (
+                  <ButtonLink href="/staff/inspections/demo" variant="secondary">
+                    Open sample checklist
+                  </ButtonLink>
+                )}
               </div>
-              <ButtonLink href="/staff/inspections/demo" variant="secondary">
-                Open sample checklist
-              </ButtonLink>
-            </div>
-          ))}
-        </div>
+            ))}
+          </section>
+        ))
       ) : (
         <EmptyState
-          title="No demo appointments"
+          title="No appointments here"
           description="Use the local booking flow to explore the calendar."
           action={
             <ButtonLink href="/account/inspections/book" variant="secondary">

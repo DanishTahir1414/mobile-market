@@ -5,8 +5,10 @@ import { demoListings } from '../src/lib/demo-data';
 import { draftSchema } from '../src/lib/validation';
 import { formatShopDate, formatPrice } from '../src/lib/format';
 
+// The first six are the original hand-built phones; these tests keep their exact expectations.
+const original = demoListings.slice(0, 6);
 test('browse combines brand, PTA and budget filters', () => {
-  const results = filterListings(demoListings, {
+  const results = filterListings(original, {
     brand: 'Apple',
     pta: 'Approved',
     max: '220000',
@@ -14,8 +16,11 @@ test('browse combines brand, PTA and budget filters', () => {
   assert.deepEqual(results.map((l) => l.id).sort(), ['iphone-13', 'iphone-14-pro']);
 });
 test('expired inspection never appears in inspected-only results', () => {
-  const results = filterListings(demoListings, { inspected: 'true' });
+  const results = filterListings(original, { inspected: 'true' });
   assert.equal(results.length, 3);
+  assert.ok(
+    filterListings(demoListings, { inspected: 'true' }).every((l) => l.inspection === 'current'),
+  );
   assert.ok(results.every((l) => l.inspection === 'current'));
 });
 test('search ignores casing and leading whitespace', () => {
@@ -23,8 +28,13 @@ test('search ignores casing and leading whitespace', () => {
 });
 test('price ordering is numeric and does not mutate original inventory', () => {
   const order = demoListings.map((l) => l.id);
-  const results = filterListings(demoListings, { sort: 'price-low' });
+  const results = filterListings(original, { sort: 'price-low' });
   assert.equal(results[0].id, 'iphone-13');
+  const all = filterListings(demoListings, { sort: 'price-low' }).map((l) => l.price);
+  assert.deepEqual(
+    all,
+    [...all].sort((a, b) => a - b),
+  );
   assert.deepEqual(
     demoListings.map((l) => l.id),
     order,
@@ -152,4 +162,57 @@ test('sellers cannot publish, approve or revive a sold ad themselves', () => {
 test('only draft and needs-changes ads can be edited', () => {
   const editable = (Object.keys(statusLabels) as ListingStatus[]).filter(isEditable);
   assert.deepEqual(editable.sort(), ['draft', 'rejected']);
+});
+
+import { timelineSteps } from '../src/lib/inspection-timeline';
+import { groupByShopDay } from '../src/lib/appointments';
+import { reviewFlags } from '../src/lib/moderation';
+import { activeFilters } from '../src/lib/marketplace';
+
+test('timeline marks earlier stages done, one current, the rest upcoming', () => {
+  assert.deepEqual(
+    timelineSteps('in_progress').map((s) => s.state),
+    ['done', 'done', 'current', 'upcoming', 'upcoming'],
+  );
+  assert.ok(timelineSteps('badge_awarded').every((s) => s.state === 'done'));
+});
+
+test('appointments group by Karachi day, not UTC day', () => {
+  // 20:00 UTC on the 24th is 01:00 on the 25th in Karachi (UTC+5).
+  const groups = groupByShopDay([
+    { id: 'a', listingName: 'A', startsAt: '2026-10-24T20:00:00Z', status: 'booked' },
+    { id: 'b', listingName: 'B', startsAt: '2026-10-25T05:00:00Z', status: 'booked' },
+    { id: 'c', listingName: 'C', startsAt: '2026-10-24T05:00:00Z', status: 'cancelled' },
+  ]);
+  assert.deepEqual(
+    groups.map((g) => [g.key, g.items.map((i) => i.id)]),
+    [
+      ['2026-10-24', ['c']],
+      ['2026-10-25', ['a', 'b']],
+    ],
+  );
+});
+
+test('review flags prompt on suspicious price and missing declarations, with few peers ignored', () => {
+  const base = demoListings.find((l) => l.id === 'iphone-14-pro')!;
+  const peers = [200000, 210000, 220000].map((price, i) => ({ ...base, id: `p${i}`, price }));
+  const cheap = { ...base, id: 'cheap', price: 90000, pta: 'Unknown' as const };
+  const flags = reviewFlags(cheap, [cheap, ...peers]);
+  assert.ok(flags.some((f) => f.includes('far below')));
+  assert.ok(flags.some((f) => f.includes('PTA')));
+  assert.ok(!reviewFlags(cheap, [cheap, peers[0]]).some((f) => f.includes('far below')));
+});
+
+test('active filters list only set filters and ignore inspected=false', () => {
+  assert.deepEqual(
+    activeFilters({ brand: 'Apple', storage: '256', inspected: 'false' }).map((c) => c.label),
+    ['Apple', '256 GB'],
+  );
+});
+
+test('the larger sample catalog has unique ids and valid photos', () => {
+  const ids = demoListings.map((l) => l.id);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.ok(demoListings.length >= 24);
+  assert.ok(demoListings.every((l) => l.image.startsWith('/images/')));
 });

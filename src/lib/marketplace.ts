@@ -11,6 +11,27 @@ export interface Filters {
   inspected?: string;
   sort?: string;
 }
+const filterLabels: [keyof Filters, (v: string) => string][] = [
+  ['query', (v) => `“${v}”`],
+  ['brand', (v) => v],
+  ['city', (v) => v],
+  ['condition', (v) => v],
+  ['pta', (v) => `PTA ${v.toLowerCase()}`],
+  ['storage', (v) => `${v} GB`],
+  ['min', (v) => `From PKR ${Number(v).toLocaleString('en-PK')}`],
+  ['max', (v) => `Up to PKR ${Number(v).toLocaleString('en-PK')}`],
+  ['inspected', () => 'Shop inspected only'],
+];
+/** One removable chip per filter that is actually set. */
+export function activeFilters(filters: Filters) {
+  return filterLabels.flatMap(([key, label]) => {
+    const value = filters[key];
+    return value && !(key === 'inspected' && value !== 'true')
+      ? [{ key: key as string, label: label(value) }]
+      : [];
+  });
+}
+
 /** Cover first, then extra photos, without duplicates; capped to match the seller form. */
 export function listingPhotos(listing: Listing) {
   return [...new Set([listing.image, ...(listing.gallery ?? [])])].slice(0, 8);

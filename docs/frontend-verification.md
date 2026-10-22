@@ -52,3 +52,7 @@ No load, Web Vitals, bundle-budget or WCAG conformance result is claimed.
 - Verify contact, media and inspection eligibility against authoritative services.
 
 The existing v2 specifications remain the baseline for that future implementation.
+
+## Update 22 October 2026 (inspection timeline, catalog, staff queue)
+
+`typecheck`, `lint`, 22 tests and `build` (44 pages) passed. A production server returned 200 for browse with filters, moderation queue and detail, appointments, account inspections and a new listing page. Touch behavior of the filter sheet, the timeline layout and real device scroll speed are unverified: no browser was available.

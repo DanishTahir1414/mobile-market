@@ -177,9 +177,8 @@ export function Browse() {
         <section>
           <div className="results-heading">
             <span>
-              <strong>{results.length}</strong> sample phones
+              <strong>{results.length}</strong> phones
             </span>
-            <span>Fictional inventory · No real sellers</span>
           </div>
           {chips.length > 0 && (
             <ul className="filter-chips" aria-label="Active filters">

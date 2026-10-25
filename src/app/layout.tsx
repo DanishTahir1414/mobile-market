@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: '%s | Mobile Market',
   },
   description:
-    'Browse phones, connect with local sellers and explore optional in-shop device inspection. Frontend demonstration.',
+    'Browse phones, connect with local sellers and explore optional in-shop device inspection.',
   robots: { index: false, follow: false },
 };
 export default function RootLayout({ children }: { children: React.ReactNode }) {

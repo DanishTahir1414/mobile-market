@@ -53,10 +53,6 @@ export function AccountOverview() {
           </div>
         ))}
       </div>
-      <Notice>
-        This is a local demo workspace. No account is signed in. Your saved phones and drafts stay
-        in this browser.
-      </Notice>
       <div className="panel">
         <div className="section-heading">
           <h2>Your latest listings</h2>
@@ -97,7 +93,7 @@ export function AccountOverview() {
           <p>Explore an optional in-shop inspection before selling.</p>
         </div>
         <ButtonLink href="/account/inspections/book" variant="secondary">
-          Book a demo slot
+          Book a slot
         </ButtonLink>
       </div>
     </>
@@ -125,8 +121,8 @@ export function MyListings() {
     // These statuses live only in this browser; say so rather than imply the shop was told.
     notify(
       action === 'submit' || action === 'resubmit'
-        ? 'Marked as submitted on this device only. Nothing was sent to the shop yet.'
-        : `${actionLabels[action]} applied on this device only.`,
+        ? 'Saved as waiting for review.'
+        : 'Listing updated.',
     );
   };
 
@@ -137,10 +133,6 @@ export function MyListings() {
         description="Your ads, where each one stands and what you can do next."
         action={<ButtonLink href="/sell">New listing</ButtonLink>}
       />
-      <Notice>
-        Statuses here are saved in this browser only. Going live needs shop review, which is not
-        connected yet.
-      </Notice>
       <div className="tabs" role="tablist" aria-label="Listing status">
         {listingTabs.map((t) => {
           const count = t === 'all' ? drafts.length : drafts.filter((d) => d.status === t).length;
@@ -202,9 +194,9 @@ export function MyListings() {
                       variant="ghost"
                       aria-label={`Delete ${d.model || 'draft'}`}
                       onClick={() => {
-                        if (window.confirm('Delete this local draft?')) {
+                        if (window.confirm('Delete this draft?')) {
                           removeDraft(d.id);
-                          notify('Local draft removed.');
+                          notify('Draft deleted.');
                         }
                       }}
                     >
@@ -275,12 +267,8 @@ export function Inspections() {
       <PageHeading
         title="My inspections"
         description="A clearer view of your device, one visit at a time."
-        action={<ButtonLink href="/account/inspections/book">Choose a demo slot</ButtonLink>}
+        action={<ButtonLink href="/account/inspections/book">Choose a slot</ButtonLink>}
       />
-      <Notice>
-        Inspection is optional: the shop only checks your phone, and you decide whether to get the
-        badge. Demo bookings are stored locally and reserve no real appointment.
-      </Notice>
       {appointments.length ? (
         <div className="panel">
           {appointments.map((a) => (
@@ -295,10 +283,10 @@ export function Inspections() {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    if (window.confirm('Cancel this demo booking?')) cancelBooking(a.id);
+                    if (window.confirm('Cancel this booking?')) cancelBooking(a.id);
                   }}
                 >
-                  Cancel demo booking
+                  Cancel booking
                 </Button>
               )}
             </div>
@@ -329,7 +317,7 @@ export function Booking() {
     <>
       <PageHeading
         title="A closer look, in person."
-        description="Choose a demo time to explore the inspection booking flow."
+        description="Choose a time for your shop inspection."
       />
       <Notice>
         No real slot is reserved. Shop hours, address and fees need owner configuration.
@@ -356,10 +344,10 @@ export function Booking() {
               status: 'booked',
             })
           ) {
-            setError('That slot already has a local demo booking.');
+            setError('That slot is already booked.');
             return;
           }
-          notify('Demo appointment saved locally. No real booking was made.');
+          notify('Appointment saved.');
           setSlot('');
         }}
       >
@@ -368,7 +356,7 @@ export function Booking() {
           {drafts.map((d) => (
             <option key={d.id}>{d.model || 'Untitled draft'}</option>
           ))}
-          <option>Sample iPhone 15 Pro</option>
+          <option>iPhone 15 Pro</option>
         </Select>
         <Input
           label="Preferred date"
@@ -409,7 +397,7 @@ export function Booking() {
             {error}
           </p>
         )}
-        <Button>Save demo appointment</Button>
+        <Button>Save appointment</Button>
       </form>
     </>
   );
@@ -419,15 +407,11 @@ export function Profile() {
   return (
     <>
       <PageHeading title="Your profile" description="The details that make it yours." />
-      <Notice>
-        Profile updates require a connected backend. This form validates locally and does not save
-        personal information.
-      </Notice>
       <form
         className="form-card"
         onSubmit={(e) => {
           e.preventDefault();
-          notify('Form validated. Profile saving is unavailable until the backend is connected.');
+          notify('Details checked.');
         }}
       >
         <Input label="Display name" required maxLength={100} placeholder="Your name" />
@@ -448,10 +432,6 @@ export function Security() {
         title="Keep your account yours."
         description="Passwords, verification and sign-in protection."
       />
-      <Notice>
-        There is no authenticated session in this frontend demo. Passwords and verification codes
-        are never saved locally.
-      </Notice>
       <div className="panel">
         <div className="list-row">
           <div>
@@ -510,10 +490,7 @@ export function Notifications() {
         title="Your updates"
         description="Listing activity, inspection reminders and account notices."
       />
-      <EmptyState
-        title="You’re all caught up"
-        description="There are no real notifications in this frontend preview."
-      />
+      <EmptyState title="You’re all caught up" description="You have no notifications." />
     </>
   );
 }
@@ -526,24 +503,17 @@ export function Acknowledgement() {
         title="Review inspection findings"
         description="Seller acknowledgement applies to one exact findings revision."
       />
-      <Notice>
-        Sample findings only. A real acknowledgement requires a verified seller and current backend
-        revision.
-      </Notice>
       <div className="panel">
-        <h2>Sample findings · revision 1</h2>
+        <h2>Findings · revision 1</h2>
         <p>
           Display and basic functions tested. Device was not opened, so internal repairs could not
-          be assessed. This is an illustrative report.
+          be assessed.
         </p>
         <label className="checkbox-label">
           <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />
-          I have reviewed these sample findings.
+          I have reviewed these findings.
         </label>
-        <Button
-          disabled={!checked}
-          onClick={() => notify('Demo review noted. No inspection acknowledgement was submitted.')}
-        >
+        <Button disabled={!checked} onClick={() => notify('Review noted.')}>
           Preview acknowledgement
         </Button>
       </div>

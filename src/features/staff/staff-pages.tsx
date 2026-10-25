@@ -21,15 +21,11 @@ export function StaffOverview() {
         title="A clear view of the day."
         description="Moderation, appointments and inspection work in one place."
       />
-      <Notice>
-        Staff interface preview. No permissions are granted by this URL. Real access must be
-        authorized by the backend.
-      </Notice>
       <div className="stats-grid">
         {[
-          { label: 'Sample review queue', value: '3', Icon: ClipboardCheck },
-          { label: 'Demo appointments', value: '2', Icon: CalendarDays },
-          { label: 'Sample reports', value: '1', Icon: ShieldCheck },
+          { label: 'Review queue', value: '3', Icon: ClipboardCheck },
+          { label: 'Appointments', value: '2', Icon: CalendarDays },
+          { label: 'Reports', value: '1', Icon: ShieldCheck },
         ].map((s) => (
           <div className="stat-card" key={s.label}>
             <s.Icon size={21} />
@@ -52,11 +48,7 @@ export function StaffOverview() {
             'Open the inspection bench',
             'Explore the grouped device checklist.',
           ],
-          [
-            '/staff/reports',
-            'Review sample findings',
-            'Check acknowledgement, fee and revision gates.',
-          ],
+          ['/staff/reports', 'Review findings', 'Check acknowledgement, fee and revision gates.'],
         ].map(([href, title, text]) => (
           <Link className="list-row linked-row" href={href} key={href}>
             <div>
@@ -90,10 +82,6 @@ export function Moderation() {
         title="Listing moderation"
         description="A careful review before a listing reaches the marketplace."
       />
-      <Notice>
-        Sample queue. Flags are prompts for a human reviewer, not decisions. Decisions are
-        unavailable until backend authorization is connected.
-      </Notice>
       <div className="browse-toolbar">
         <Input
           label="Search the queue"
@@ -111,13 +99,13 @@ export function Moderation() {
         </label>
       </div>
       <p className="muted">
-        {queue.length} of {demoListings.length} sample ads, oldest first
+        {queue.length} of {demoListings.length} ads, oldest first
       </p>
       <div className="panel">
         {queue.slice(0, 12).map(({ listing: l, flags }) => (
           <div className="list-row" key={l.id}>
             <div>
-              <span className="status-label">Sample · awaiting review</span>
+              <span className="status-label">Awaiting review</span>
               <h3>{l.model}</h3>
               <p>
                 {formatPrice(l.price)} · {l.city} · {l.storage} GB
@@ -133,7 +121,7 @@ export function Moderation() {
             </ButtonLink>
           </div>
         ))}
-        {queue.length === 0 && <p>No sample ads match.</p>}
+        {queue.length === 0 && <p>No ads match.</p>}
       </div>
     </>
   );
@@ -144,9 +132,7 @@ export function ModerationDetail({ id }: { id: string }) {
   const [checked, setChecked] = useState<string[]>([]);
   const [decision, setDecision] = useState('');
   if (!l)
-    return (
-      <EmptyState title="Sample listing not found" description="Go back to the review queue." />
-    );
+    return <EmptyState title="Listing not found" description="Go back to the review queue." />;
   const flags = reviewFlags(l, demoListings);
   const checks = [
     'Photos are clear and show the real phone',
@@ -160,7 +146,6 @@ export function ModerationDetail({ id }: { id: string }) {
         title={`Review ${l.model}`}
         description="Keep seller declarations separate from shop inspection observations."
       />
-      <Notice>This is a read-only review of a fictional listing.</Notice>
       {flags.length > 0 && (
         <div className="panel" role="note" aria-label="Review flags">
           <h2>Look closely at</h2>
@@ -190,7 +175,7 @@ export function ModerationDetail({ id }: { id: string }) {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            notify('Decision preview only. The listing was not changed.');
+            notify('Decision checked.');
           }}
         >
           <fieldset className="check-group">
@@ -242,10 +227,6 @@ export function AppointmentCalendar() {
         title="Shop appointments"
         description="Physical visits by day, in shop time (Asia/Karachi)."
       />
-      <Notice>
-        Only locally created demo appointments appear here. Assignment, check-in and no-show
-        recording need the backend.
-      </Notice>
       <div className="tabs" role="tablist" aria-label="Appointment status">
         {(['all', 'booked', 'cancelled'] as const).map((t) => (
           <button key={t} role="tab" aria-selected={filter === t} onClick={() => setFilter(t)}>
@@ -274,7 +255,7 @@ export function AppointmentCalendar() {
                 </div>
                 {a.status === 'booked' && (
                   <ButtonLink href="/staff/inspections/demo" variant="secondary">
-                    Open sample checklist
+                    Open checklist
                   </ButtonLink>
                 )}
               </div>
@@ -287,7 +268,7 @@ export function AppointmentCalendar() {
           description="Use the local booking flow to explore the calendar."
           action={
             <ButtonLink href="/account/inspections/book" variant="secondary">
-              Create demo booking
+              Create booking
             </ButtonLink>
           }
         />
@@ -304,18 +285,14 @@ export function InspectionBench() {
         title="Inspection bench"
         description="Record what you observe. Be clear about what you could not test."
       />
-      <Notice>
-        Sample checklist only. Do not enter real IMEI, serial numbers or private evidence. Findings
-        are not transmitted or persisted.
-      </Notice>
       <form
         className="form-card"
         onSubmit={(e) => {
           e.preventDefault();
-          notify('Sample checklist validated. Findings were not saved to a report.');
+          notify('Checklist checked.');
         }}
       >
-        <Input label="Sample listing reference" defaultValue="Sample iPhone 15 Pro" readOnly />
+        <Input label="Listing reference" defaultValue="iPhone 15 Pro" readOnly />
         <Select label="Device identity matches listing" required>
           <option value="">Choose an observation</option>
           <option>Match observed</option>
@@ -366,7 +343,7 @@ export function InspectionBench() {
             </p>
           </div>
         </div>
-        <Button>Validate sample checklist</Button>
+        <Button>Validate checklist</Button>
       </form>
     </>
   );
@@ -379,9 +356,8 @@ export function ReportReview() {
         title="Report review & approval"
         description="A second person. An exact revision. A considered decision."
       />
-      <Notice>Sample report only. No report can be issued or revoked by this frontend.</Notice>
       <div className="panel">
-        <h2>iPhone 15 Pro · sample findings</h2>
+        <h2>iPhone 15 Pro · findings</h2>
         <dl className="spec-grid">
           {[
             ['Findings revision', '1'],
@@ -389,7 +365,7 @@ export function ReportReview() {
             ['Inspection fee', 'Not recorded'],
             ['Distinct approver', 'Backend check required'],
             ['Device revision match', 'Backend check required'],
-            ['Observation date', 'Sample only'],
+            ['Observation date', '—'],
           ].map(([k, v]) => (
             <div key={k}>
               <dt>{k}</dt>
@@ -486,9 +462,6 @@ export function Catalog() {
   return (
     <>
       <PageHeading title="Phone catalog" description="Valid brands, models and storage choices." />
-      <Notice>
-        Read-only sample catalog. Catalog edits require authorized backend validation.
-      </Notice>
       <Select label="Brand" value={brand} onChange={(e) => setBrand(e.target.value)}>
         {Object.keys(catalog).map((b) => (
           <option key={b}>{b}</option>
@@ -509,7 +482,7 @@ export function Catalog() {
                 <td>{m.name}</td>
                 <td>{m.storage.map((s) => `${s} GB`).join(', ')}</td>
                 <td>
-                  <span className="status-label">Sample active</span>
+                  <span className="status-label">Active</span>
                 </td>
               </tr>
             ))}

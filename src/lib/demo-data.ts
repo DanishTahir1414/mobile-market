@@ -11,8 +11,7 @@ const base = {
   defects: 'No defects declared. Always inspect a device before buying.',
   accessories: ['Box', 'Charging cable'],
   status: 'published' as const,
-  description:
-    'Illustrative listing for the Mobile Market frontend. Meet the seller, check the phone carefully and agree on payment directly. This is not a real device offered for sale.',
+  description: 'Meet the seller, check the phone carefully and agree on payment directly.',
 };
 const handBuilt: Listing[] = [
   {

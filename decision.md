@@ -137,3 +137,11 @@ The navbar floats: rounded, inset from the page edges, frosted glass, and sticky
 The loading screen is pure CSS (logo, drifting fireflies for "jugnu", a thin progress bar) and fades out by itself after about a second, so it cannot hang and needs no JavaScript. It is decorative only (aria-hidden). The 3D starter kit's rule to wait for a scene does not apply because this site has no 3D scene. It shows on a full page load, not on in-app navigation.
 
 **Open:** the reference loading screen on the artivistaa site was not available to me, so the animation follows the logo and the kit's rules only.
+
+## 17. 3D hero, copy and wording cleanup, browser tests
+
+The homepage hero is a sticky stage: scrolling through it turns a gold phone, built from basic shapes with the shop logo on its screen, once around. The server renders the copy and the static photo first, so the first paint is fast. The 3D scene loads afterwards and only on capable devices; reduced-motion, data-saver and low-power devices keep the photo. It draws only when scrolled (demand rendering), so it uses no power at rest. `?hero=3d` and `?hero=off` force either mode for testing.
+
+Homepage copy was cut to the essentials, and all demo, sample and fictional wording was removed from the interface. Surfaces that were dark are amber with dark text, so no text is white on yellow. Low-contrast grey text was darkened for accessibility.
+
+`npm run test:e2e` runs a headless-browser check of page loads, sideways scrolling, the loading screen, the 3D turn, the photo viewer and accessibility (critical problems fail the run). It refuses to start if its port is already in use, because a leftover server serves an old build.

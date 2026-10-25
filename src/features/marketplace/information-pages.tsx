@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import {
   ArrowUpRight,
-  MapPin,
   ShieldCheck,
   Search,
   MessageCircle,
@@ -111,14 +110,7 @@ export function ShopPage({ photo }: { photo?: { src: string; alt: string } | nul
           <div className="shop-photo">
             <Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 850px) 90vw, 50vw" />
           </div>
-        ) : (
-          <div className="shop-map">
-            <MapPin size={54} strokeWidth={1} />
-            <strong>Shop location coming soon</strong>
-            <p>A verified address will appear here.</p>
-            <span>Map is intentionally unavailable until configured.</span>
-          </div>
-        )}
+        ) : null}
         <div className="panel">
           <p className="eyebrow">MOBILE MARKET</p>
           <h2>Come say hello.</h2>
@@ -322,10 +314,6 @@ export function PolicyPage({ policy }: { policy: keyof typeof policies }) {
         title={c.title}
         description="Draft content for product review. Not a final legal policy."
       />
-      <Notice>
-        These terms must be reviewed, completed and approved by the shop owner before launch.
-        Frontend policy editing is available as a form preview in shop settings.
-      </Notice>
       {c.sections.map(([title, text], i) => (
         <section key={title}>
           <span className="eyebrow">0{i + 1}</span>

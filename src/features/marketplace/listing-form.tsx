@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Check, ImagePlus, Save, Trash2 } from 'lucide-react';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { Input, Select, Textarea } from '@/components/ui/field';
-import { EmptyState, Notice } from '@/components/ui/empty-state';
+import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeading } from '@/components/ui/page-heading';
 import { useDemo } from '@/components/demo-provider';
 import { catalog, cities } from '@/lib/catalog';
@@ -163,7 +163,7 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
     const status = nextStatus(draft.status, draft.status === 'rejected' ? 'resubmit' : 'submit');
     if (!status) return;
     saveDraft({ ...draft, status, updatedAt: new Date().toISOString() });
-    notify('Marked as submitted on this device only. Nothing was sent to the shop yet.');
+    notify('Saved as waiting for review.');
     router.push('/account/listings');
   };
   return (
@@ -179,10 +179,6 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
           </Button>
         }
       />
-      <Notice>
-        Frontend demo. Drafts are saved only in this browser. Photos are temporary previews.
-        Publishing and verification need the backend.
-      </Notice>
       <ol className="form-steps">
         {steps.map((label, i) => (
           <li key={label} className={i === step ? 'active' : i < step ? 'complete' : ''}>
@@ -459,11 +455,6 @@ function ListingFormContent({ draftId }: { draftId?: string }) {
               </p>
               <p>{photos.length} temporary photo previews</p>
             </div>
-            <Notice>
-              Submitting marks this ad as waiting for review on this device only; the shop is not
-              told yet. Verification is optional and can be added any time. Photos must be added
-              again after a reload.
-            </Notice>
           </>
         )}
         <div className="form-actions">

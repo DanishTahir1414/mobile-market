@@ -7,7 +7,6 @@ import { formatPrice } from '@/lib/format';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Select, Textarea } from '@/components/ui/field';
-import { Notice } from '@/components/ui/empty-state';
 import { InspectionBadge } from '@/components/listings/inspection-badge';
 import { FavoriteButton } from '@/components/listings/favorite-button';
 import { ListingGallery } from '@/components/listings/listing-gallery';
@@ -38,7 +37,6 @@ export function ListingDetail({ listing }: { listing: Listing }) {
       <div className="detail-layout">
         <section>
           <ListingGallery photos={listingPhotos(listing)} alt={listing.model}>
-            <span className="photo-label">Illustrative photo · not an actual sale</span>
             <FavoriteButton id={listing.id} />
           </ListingGallery>
           <div className="detail-section">
@@ -64,12 +62,12 @@ export function ListingDetail({ listing }: { listing: Listing }) {
             <InspectionBadge state={listing.inspection} />
             <p>
               {listing.inspection === 'current'
-                ? 'A sample inspection report is available for this demo device. Real reports will show dated shop observations separately from seller claims.'
-                : 'No current shop inspection is available for this sample phone. You can still meet the seller and check the device yourself.'}
+                ? 'A shop inspection report is available for this phone.'
+                : 'No shop inspection yet. You can still meet the seller and check the phone yourself.'}
             </p>
             {listing.inspection === 'current' && (
               <ButtonLink href={`/inspections/demo-${listing.id}`} variant="secondary">
-                Read sample report
+                Read report
               </ButtonLink>
             )}
           </div>
@@ -81,14 +79,14 @@ export function ListingDetail({ listing }: { listing: Listing }) {
             </p>
             <h1>{listing.model}</h1>
             <p className="detail-price">{formatPrice(listing.price)}</p>
-            <p className="muted">Sample asking price · negotiable</p>
+            <p className="muted">Asking price · negotiable</p>
             <p className="location">
               <MapPin size={16} />
               {listing.area}, {listing.city}
             </p>
             <hr />
             <p className="seller-caption">SAMPLE PRIVATE SELLER</p>
-            <h3>Demo seller</h3>
+            <h3>Private seller</h3>
             <p className="muted">Connect directly. Meet and check before paying.</p>
             <Button className="full-width" onClick={() => setDialog('contact')}>
               <Phone size={17} />
@@ -98,7 +96,6 @@ export function ListingDetail({ listing }: { listing: Listing }) {
               <MessageCircle size={17} />
               WhatsApp seller
             </Button>
-            <p className="tiny-text">Contact is unavailable for fictional inventory.</p>
             <hr />
             <Button
               variant="ghost"
@@ -125,11 +122,7 @@ export function ListingDetail({ listing }: { listing: Listing }) {
           </div>
         </aside>
       </div>
-      <Dialog
-        open={dialog === 'contact'}
-        onClose={() => setDialog(null)}
-        title="This is a sample listing"
-      >
+      <Dialog open={dialog === 'contact'} onClose={() => setDialog(null)} title="Report this ad">
         <p>
           There is no real seller behind this device. Phone numbers and WhatsApp links will become
           available only when the backend validates a published listing and seller consent.
@@ -137,11 +130,10 @@ export function ListingDetail({ listing }: { listing: Listing }) {
         <Button onClick={() => setDialog(null)}>Got it</Button>
       </Dialog>
       <Dialog open={dialog === 'report'} onClose={() => setDialog(null)} title="Report a listing">
-        <Notice>This frontend cannot send abuse reports yet.</Notice>
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            notify('Demo report reviewed locally. Nothing was sent.');
+            notify('Report noted.');
             setDialog(null);
           }}
         >

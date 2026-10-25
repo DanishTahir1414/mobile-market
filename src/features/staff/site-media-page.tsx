@@ -116,7 +116,7 @@ function SlotEditor({ slot, current }: { slot: SiteMediaSlot; current?: SiteMedi
           <div className="form-actions">
             <Button
               disabled={preview.problems.length > 0 || preview.alt.trim().length < 3}
-              onClick={() => notify('Checked locally. Nothing was uploaded or published.')}
+              onClick={() => notify('Picture checked.')}
             >
               Check this picture
             </Button>

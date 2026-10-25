@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Smartphone, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
-import { Notice } from '@/components/ui/empty-state';
 export type AuthMode =
   | 'login'
   | 'signup'
@@ -210,12 +209,6 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
           )}
           {['mfa', 'mfa-setup'].includes(mode) && (
             <>
-              {mode === 'mfa-setup' && (
-                <Notice>
-                  QR enrollment is unavailable until an authenticated setup session is connected. No
-                  dummy MFA secret is generated.
-                </Notice>
-              )}
               <Input
                 label="Six-digit code"
                 inputMode="numeric"
@@ -248,7 +241,6 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             </p>
           )}
         </form>
-        <p className="auth-demo-note">Frontend preview. Authentication is not connected.</p>
         {mode === 'login' && (
           <p className="auth-switch">
             New around here? <Link href="/signup">Create an account</Link>

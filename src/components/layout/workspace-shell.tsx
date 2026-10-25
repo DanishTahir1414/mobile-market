@@ -62,7 +62,6 @@ export function WorkspaceShell({
       <aside className="workspace-nav">
         <p className="eyebrow">{staff ? 'SHOP WORKSPACE' : 'YOUR SPACE'}</p>
         <h2>{staff ? 'Shop team' : 'My account'}</h2>
-        <p className="workspace-demo">Frontend preview</p>
         <nav aria-label={staff ? 'Staff navigation' : 'Account navigation'}>
           {(staff ? staffLinks : accountLinks).map(({ href, label, Icon }) => (
             <Link

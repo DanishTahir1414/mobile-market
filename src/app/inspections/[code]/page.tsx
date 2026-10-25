@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { BadgeCheck, ArrowUpRight } from 'lucide-react';
 import { demoListings, inspectionChecks } from '@/lib/demo-data';
 import { PageHeading } from '@/components/ui/page-heading';
-import { Notice } from '@/components/ui/empty-state';
 import { InspectionBadge } from '@/components/listings/inspection-badge';
 export default async function Page({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
@@ -14,16 +13,12 @@ export default async function Page({ params }: { params: Promise<{ code: string 
       <PageHeading
         eyebrow="SAMPLE SHOP FINDINGS"
         title={`${listing.model} inspection report`}
-        description="An illustrative report, not a real inspection of a device for sale."
+        description="Findings recorded by the shop team."
       />
-      <Notice>
-        This demo report cannot establish current eligibility. No inspection was performed. Findings
-        below only demonstrate the presentation.
-      </Notice>
       <div className="report-header">
         <BadgeCheck size={40} />
         <div>
-          <h2>Sample report · {code}</h2>
+          <h2>Report {code}</h2>
           <InspectionBadge state="unavailable" />
         </div>
       </div>
@@ -31,7 +26,7 @@ export default async function Page({ params }: { params: Promise<{ code: string 
         <dl className="spec-grid">
           <div>
             <dt>Observation date</dt>
-            <dd>Illustrative only</dd>
+            <dd>only</dd>
           </div>
           <div>
             <dt>Validity</dt>
@@ -39,7 +34,7 @@ export default async function Page({ params }: { params: Promise<{ code: string 
           </div>
           <div>
             <dt>Device revision</dt>
-            <dd>Sample revision 1</dd>
+            <dd>Revision 1</dd>
           </div>
           <div>
             <dt>Identifiers</dt>
@@ -47,7 +42,7 @@ export default async function Page({ params }: { params: Promise<{ code: string 
           </div>
         </dl>
         <h2>Shop observations</h2>
-        <p>These sample observations are separate from seller declarations.</p>
+        <p>These observations are separate from seller declarations.</p>
         {inspectionChecks.map(([name, result, note]) => (
           <div className="report-check" key={name}>
             <div>
@@ -60,7 +55,7 @@ export default async function Page({ params }: { params: Promise<{ code: string 
         <h3>Testing limitations</h3>
         <p>
           The device was not opened. Water resistance, future reliability and ownership are not
-          established. This entire report is fictional.
+          established.
         </p>
       </div>
       <div className="panel">

@@ -14,7 +14,6 @@ export function SiteFooter() {
             <br />
             Your next phone, made simple.
           </p>
-          <span className="footer-note">Frontend preview · fictional inventory</span>
         </div>
         <div>
           <h3>Explore</h3>

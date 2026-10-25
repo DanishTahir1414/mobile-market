@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { ArrowUpRight, Heart, Menu, Smartphone, X, UserRound, Plus } from 'lucide-react';
+import { Heart, Menu, Smartphone, X, UserRound, Plus } from 'lucide-react';
 import { Button, ButtonLink } from '@/components/ui/button';
 export function SiteHeader({ logo }: { logo?: { src: string; alt: string } | null }) {
   const path = usePathname();
@@ -15,12 +15,6 @@ export function SiteHeader({ logo }: { logo?: { src: string; alt: string } | nul
   ];
   return (
     <>
-      <div className="announcement">
-        One local shop. A better way to buy your next phone.{' '}
-        <Link href="/how-inspection-works">
-          How it works <ArrowUpRight size={12} />
-        </Link>
-      </div>
       <header className="site-header">
         <div className="header-inner">
           <Link href="/" className="brand" aria-label="Mobile Market home">

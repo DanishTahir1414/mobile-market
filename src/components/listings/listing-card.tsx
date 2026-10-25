@@ -18,7 +18,7 @@ export function ListingCard({
         <Link href={`/mobiles/${listing.id}`} aria-label={`View ${listing.model}`}>
           <Image
             src={listing.image}
-            alt={`Illustrative ${listing.brand} phone photograph`}
+            alt={`${listing.brand} phone photo`}
             fill
             sizes="(max-width: 639px) 90vw, (max-width: 1023px) 45vw, 28vw"
             priority={priority}

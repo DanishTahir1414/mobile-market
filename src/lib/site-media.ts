@@ -75,7 +75,7 @@ export const defaultSiteMedia: SiteMediaMap = {
   },
   'home-hero': {
     src: '/images/iphone-titanium.jpg',
-    alt: 'Illustrative phone with a titanium finish',
+    alt: 'phone with a titanium finish',
     updatedAt: '2026-10-16T00:00:00Z',
   },
 };

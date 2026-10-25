@@ -75,7 +75,7 @@ export function Lightbox({
         <Image
           key={photos[index]}
           src={photos[index]}
-          alt={`Illustrative ${alt} photograph ${index + 1}`}
+          alt={`${alt} photo ${index + 1}`}
           fill
           sizes="100vw"
           quality={90}

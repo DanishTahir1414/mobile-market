@@ -66,7 +66,7 @@ export function ListingGallery({
             >
               <Image
                 src={src}
-                alt={`Illustrative ${alt} photograph ${i + 1}`}
+                alt={`${alt} photo ${i + 1}`}
                 fill
                 priority={i === 0}
                 loading={i === 0 ? undefined : 'lazy'}

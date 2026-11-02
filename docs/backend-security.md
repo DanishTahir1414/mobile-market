@@ -1,0 +1,36 @@
+# Backend security: OWASP Top 10 (2021) mapping
+
+Status of the Identity service. "Done" means implemented and covered by `backend/test`.
+Anything not marked done is listed under Open items; none is hidden.
+
+| OWASP | Risk                                       | Controls in this service                                                                                                                                                                                                                                                                                                                                    | Status                                                              |
+| ----- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| A01   | Broken access control                      | Opaque server sessions checked on every protected route; sessions revoked on logout, suspension, idle or absolute expiry; sign-up can only create `public` accounts and unknown fields are rejected, so role or realm cannot be chosen by the client; CSRF defence in two layers (Origin allow-list, per-session token); CORS allow-list with exact origins | Done                                                                |
+| A02   | Cryptographic failures                     | Passwords hashed with Argon2id (OWASP minimum cost); session and CSRF values are 256-bit random or HMAC, only SHA-256 digests of sessions are stored; emails and IPs in the attempt log are keyed digests; secrets have no defaults and must be 32+ characters; production requires Secure cookies and TLS to the database                                  | Done                                                                |
+| A03   | Injection                                  | Every query is parameterised through one wrapper; all input validated by strict schemas; tests send SQL text as data                                                                                                                                                                                                                                        | Done                                                                |
+| A04   | Insecure design                            | Same answer for an existing email at sign-up; same answer and similar timing for unknown email and wrong password; limited attempts per account and per IP; body size limit                                                                                                                                                                                 | Done                                                                |
+| A05   | Security misconfiguration                  | Helmet headers and a deny-all CSP, no framework banner, no-store on API answers, configuration validated at start, generic errors with no stack or internals, container runs as non-root                                                                                                                                                                    | Done (container build untested here)                                |
+| A06   | Vulnerable components                      | `npm audit --omit=dev` is clean at the time of writing; dependencies are few and pinned by the lock file                                                                                                                                                                                                                                                    | Re-run on every change                                              |
+| A07   | Identification and authentication failures | 12-character minimum, common passwords refused, lockout window with `Retry-After`, new session on every sign-in, HttpOnly SameSite cookie with `__Host-` prefix in production                                                                                                                                                                               | Done; MFA, email and phone verification and password reset are open |
+| A08   | Software and data integrity failures       | Migrations are applied once, in order, under a database lock; lock files committed                                                                                                                                                                                                                                                                          | Done                                                                |
+| A09   | Logging and monitoring failures            | Security events table (sign-up, sign-in success, failure, blocked, logout) with request id and IP digest, never secrets; no request bodies are logged                                                                                                                                                                                                       | Done; alerting is open                                              |
+| A10   | Server-side request forgery                | This service makes no outbound requests                                                                                                                                                                                                                                                                                                                     | Not applicable yet                                                  |
+
+## Rate limiting
+
+- **Per request, per IP:** a global ceiling (120 per minute by default) and a stricter one on sign-up and
+  sign-in (10 per minute). Answers are 429 with `Retry-After`. Counters live in memory, so they suit
+  one instance; with several replicas, move them to a shared store.
+- **Per account and per IP, in the database:** 5 failed sign-ins per account and 20 per IP in 15
+  minutes lock sign-in for the rest of the window. This survives restarts and works across replicas.
+- Set `TRUST_PROXY` to the number of proxies in front of the service, otherwise clients behind a proxy
+  share one address and a spoofed `X-Forwarded-For` could evade limits.
+
+## Open items
+
+1. MFA for staff (TOTP), recovery codes, staff invitations and the `staff` realm sign-in.
+2. Email and phone verification, password reset, and the switch of new accounts to `pending` until verified.
+3. A scheduled job that deletes old rows from `login_attempts` and expired `sessions`.
+4. A shared rate-limit store for multiple replicas, and a least-privilege database user (the service needs no DDL rights after migration).
+5. Alerting on blocked-sign-in spikes; a breach-password list larger than the built-in sample.
+6. The container image and `docker-compose.yml` were written but not run: Docker is not available in my sandbox.

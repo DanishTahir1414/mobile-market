@@ -4333,3 +4333,20 @@ main {
   background: #ffe3b0;
   color: #1c1710;
 }
+
+/* ---- Still phone picture (no dark card behind it) ---------------------- */
+.hero-art--phone {
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.hero-art--phone .hero-phone {
+  position: relative;
+  width: auto;
+  height: min(100%, 640px);
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 28px 30px rgba(110, 72, 10, 0.28));
+}

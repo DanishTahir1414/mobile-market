@@ -19,6 +19,7 @@ export default function HomePage() {
   return (
     <>
       <HeroStage
+        backSrc={hero?.src ?? '/images/phone-back.webp'}
         copy={
           <>
             <h1>
@@ -41,13 +42,13 @@ export default function HomePage() {
         }
         fallback={
           hero && (
-            <div className="hero-art">
+            <div className="hero-art hero-art--phone">
               <Image
                 src={hero.src}
                 alt={hero.alt}
                 fill
                 priority
-                sizes="(max-width: 800px) 90vw, 45vw"
+                sizes="(max-width: 800px) 60vw, 30vw"
                 className="hero-phone"
               />
             </div>

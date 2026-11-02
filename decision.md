@@ -145,3 +145,13 @@ The homepage hero is a sticky stage: scrolling through it turns a gold phone, bu
 Homepage copy was cut to the essentials, and all demo, sample and fictional wording was removed from the interface. Surfaces that were dark are amber with dark text, so no text is white on yellow. Low-contrast grey text was darkened for accessibility.
 
 `npm run test:e2e` runs a headless-browser check of page loads, sideways scrolling, the loading screen, the 3D turn, the photo viewer and accessibility (critical problems fail the run). It refuses to start if its port is already in use, because a leftover server serves an old build.
+
+## 18. Photo-accurate 3D phone with brand splats
+
+The 3D phone now matches the supplied photo: its back uses the photo itself (cut out, 1.5x upscaled, transparent), real raised camera rings are placed at the lens positions measured from the photo, and the metal edge reflects a built-in soft studio light, so nothing extra is downloaded. The front is a self-lit screen with a warm abstract wallpaper, the island and a clock. The real Apple wallpaper was not available to me, so this is an original stand-in; replacing the texture is a one-function change.
+
+The old hero photo is gone from the homepage, and the still fallback is the same phone, so there is no flash of a different picture before the 3D loads. The picture is the staff-managed "Homepage phone picture" slot. Camera rings are drawn only when the default picture is used, because they are placed from that photo's measurements.
+
+While the phone turns, brand marks (Apple, Samsung, Google, OnePlus, Xiaomi, Oppo) pop out from behind it on ink splats and orbit it. Marks come from the simple-icons package; OnePlus has no icon there and is drawn as text. The side buttons were dropped after they caused a stray grey block.
+
+**Tradeoff:** the 3D version needs the picture plus the splat drawings, so it loads only on capable devices.

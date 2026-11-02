@@ -43,11 +43,11 @@ export const siteMediaSlots: SiteMediaSlot[] = [
   },
   {
     key: 'home-hero',
-    label: 'Homepage hero photo',
-    where: 'Large photo beside the homepage headline',
-    aspect: 4 / 5,
-    minWidth: 1000,
-    minHeight: 1250,
+    label: 'Homepage phone picture',
+    where: 'Back view of the phone on the homepage, on a transparent background',
+    aspect: 0.4944,
+    minWidth: 600,
+    minHeight: 1200,
     required: true,
   },
   {
@@ -74,8 +74,8 @@ export const defaultSiteMedia: SiteMediaMap = {
     updatedAt: '2026-10-23T00:00:00Z',
   },
   'home-hero': {
-    src: '/images/iphone-titanium.jpg',
-    alt: 'phone with a titanium finish',
+    src: '/images/phone-back.webp',
+    alt: 'Silver smartphone seen from the back',
     updatedAt: '2026-10-16T00:00:00Z',
   },
 };

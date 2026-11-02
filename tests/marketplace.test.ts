@@ -96,14 +96,14 @@ const heroSlot = siteMediaSlots.find((s) => s.key === 'home-hero')!;
 
 test('site pictures accept a correctly sized, correctly shaped image', () => {
   assert.deepEqual(
-    checkSiteImage({ type: 'image/webp', size: 800_000, width: 1200, height: 1500 }, heroSlot),
+    checkSiteImage({ type: 'image/webp', size: 800_000, width: 920, height: 1860 }, heroSlot),
     [],
   );
 });
 
 test('site pictures reject wrong type, oversize, small and badly shaped files together', () => {
   const problems = checkSiteImage(
-    { type: 'image/gif', size: 6 * 1024 * 1024, width: 600, height: 300 },
+    { type: 'image/gif', size: 6 * 1024 * 1024, width: 500, height: 300 },
     heroSlot,
   );
   assert.equal(problems.length, 4);

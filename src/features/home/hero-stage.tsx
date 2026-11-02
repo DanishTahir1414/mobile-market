@@ -29,7 +29,15 @@ function canRun3d() {
  * without JavaScript. On capable devices the 3D phone loads afterwards, and scrolling through
  * this tall section turns it once around. If anything fails, the photo stays.
  */
-export function HeroStage({ copy, fallback }: { copy: ReactNode; fallback: ReactNode }) {
+export function HeroStage({
+  copy,
+  fallback,
+  backSrc,
+}: {
+  copy: ReactNode;
+  fallback: ReactNode;
+  backSrc: string;
+}) {
   const section = useRef<HTMLElement>(null);
   const [mode, setMode] = useState<'static' | 'loading' | 'ready'>('static');
 
@@ -48,6 +56,7 @@ export function HeroStage({ copy, fallback }: { copy: ReactNode; fallback: React
           {mode !== 'static' && (
             <PhoneScene
               section={section}
+              backSrc={backSrc}
               onReady={() => setMode('ready')}
               onFail={() => setMode('static')}
             />

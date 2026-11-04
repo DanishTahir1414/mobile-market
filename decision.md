@@ -155,3 +155,11 @@ The old hero photo is gone from the homepage, and the still fallback is the same
 While the phone turns, brand marks (Apple, Samsung, Google, OnePlus, Xiaomi, Oppo) pop out from behind it on ink splats and orbit it. Marks come from the simple-icons package; OnePlus has no icon there and is drawn as text. The side buttons were dropped after they caused a stray grey block.
 
 **Tradeoff:** the 3D version needs the picture plus the splat drawings, so it loads only on capable devices.
+
+## 19. Hero fixes: untinted still picture, 3D for reduced-motion visitors, no stuck loading screen
+
+The still phone picture was being tinted by an old multiply blend and cropped by the old dark-card box, so it looked gold and cut off. Those old rules are removed and the picture has its own wrapper, so it shows whole and in its real silver.
+
+The 3D phone no longer switches off for visitors who ask for reduced motion: they get the same scroll-linked turn with no easing, bounce or tilt. It still switches off for data-saver, a device that cannot run WebGL 2, or very weak hardware. The reason is written to the console (`[hero] 3D is off: ...`) and to `data-3d-reason` on the hero, and a scene error falls back to the still picture instead of breaking the page.
+
+The site-wide reduced-motion rule stops all animations, which left the loading screen on top of the page for ever for those visitors. They now get no loading screen, and a browser test covers it.

@@ -119,6 +119,15 @@ try {
     );
   }
   check(shots[0] !== shots[1], 'scrolling turns the 3D phone');
+  // Visitors who ask for reduced motion must never be left behind a loading screen.
+  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await page.goto(base + '/', { waitUntil: 'networkidle0' });
+  const blocked = await page.evaluate(() => {
+    const el = document.querySelector('.preloader');
+    return Boolean(el) && getComputedStyle(el).display !== 'none';
+  });
+  check(!blocked, 'reduced motion: no loading screen is left on top of the page');
+  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
   await page.goto(base + '/?hero=off', { waitUntil: 'networkidle0' });
   check((await page.$('.hero3d__canvas')) === null, 'static photo is used when 3D is off');
 

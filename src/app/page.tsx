@@ -42,14 +42,13 @@ export default function HomePage() {
         }
         fallback={
           hero && (
-            <div className="hero-art hero-art--phone">
+            <div className="hero-still">
               <Image
                 src={hero.src}
                 alt={hero.alt}
                 fill
                 priority
                 sizes="(max-width: 800px) 60vw, 30vw"
-                className="hero-phone"
               />
             </div>
           )

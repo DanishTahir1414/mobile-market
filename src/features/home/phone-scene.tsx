@@ -59,7 +59,15 @@ function StudioLight() {
   return <primitive object={env} attach="environment" />;
 }
 
-function Scene({ section, backSrc }: { section: RefObject<HTMLElement | null>; backSrc: string }) {
+function Scene({
+  section,
+  backSrc,
+  gentle,
+}: {
+  section: RefObject<HTMLElement | null>;
+  backSrc: string;
+  gentle: boolean;
+}) {
   const phone = useRef<THREE.Group>(null);
   const orbit = useRef<(THREE.Mesh | null)[]>([]);
   const target = useRef(0);
@@ -119,26 +127,27 @@ function Scene({ section, backSrc }: { section: RefObject<HTMLElement | null>; b
   useFrame(() => {
     const g = phone.current;
     if (!g) return;
-    current.current += (target.current - current.current) * 0.14;
+    // Gentle mode follows the scroll exactly, with no easing or bounce.
+    current.current += (target.current - current.current) * (gentle ? 1 : 0.14);
     const p = current.current;
     // Starts showing the back, exactly like the still picture, then turns once around.
     g.rotation.y = Math.PI + p * Math.PI * 2;
-    g.rotation.x = -0.06 + Math.sin(p * Math.PI) * 0.1;
-    g.position.y = Math.sin(p * Math.PI) * 0.08;
+    g.rotation.x = gentle ? 0 : -0.06 + Math.sin(p * Math.PI) * 0.1;
+    g.position.y = gentle ? 0 : Math.sin(p * Math.PI) * 0.08;
     BRANDS.forEach((_, i) => {
       const m = orbit.current[i];
       if (!m) return;
       const t = clamp01((p - (0.05 + i * 0.12)) / 0.1);
       const angle = (i / BRANDS.length) * Math.PI * 2 + p * Math.PI * 2;
-      const e = t > 0 ? easeOutBack(t) : 0;
+      const e = t > 0 ? (gentle ? t : easeOutBack(t)) : 0;
       // Behind the phone the whole way round, so each one pops out from behind it.
       m.position.set(
         Math.cos(angle) * 1.05,
         [0.95, -0.7, 0.35, -1.15, 1.2, -0.2][i],
         -0.95 + Math.sin(angle) * 0.8,
       );
-      m.scale.set(e * 0.95, e * (0.95 + 0.25 * Math.sin(t * Math.PI)), 1);
-      m.rotation.z = (1 - t) * 0.9 * (i % 2 ? 1 : -1);
+      m.scale.set(e * 0.95, e * (gentle ? 0.95 : 0.95 + 0.25 * Math.sin(t * Math.PI)), 1);
+      m.rotation.z = gentle ? 0 : (1 - t) * 0.9 * (i % 2 ? 1 : -1);
       m.visible = t > 0;
     });
     if (Math.abs(target.current - p) > 0.0008) invalidate();
@@ -196,11 +205,13 @@ function Scene({ section, backSrc }: { section: RefObject<HTMLElement | null>; b
 export default function PhoneScene({
   section,
   backSrc,
+  gentle,
   onReady,
   onFail,
 }: {
   section: RefObject<HTMLElement | null>;
   backSrc: string;
+  gentle: boolean;
   onReady: () => void;
   onFail: () => void;
 }) {
@@ -221,7 +232,7 @@ export default function PhoneScene({
       <ambientLight intensity={0.5} />
       <directionalLight position={[3, 4, 5]} intensity={1.2} color="#fff4dc" />
       <Suspense fallback={null}>
-        <Scene section={section} backSrc={backSrc} />
+        <Scene section={section} backSrc={backSrc} gentle={gentle} />
       </Suspense>
     </Canvas>
   );
